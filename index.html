@@ -1,0 +1,1744 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="data:," />
+    <title>小小杜的三亚记忆</title>
+    <style>
+      :root {
+        --paper: #f6efe3;
+        --paper-deep: #efe4d0;
+        --card: #fffdf8;
+        --ink: #3d3226;
+        --ink-soft: #7a6a55;
+        --accent: #a8552f;
+        --accent-soft: #c98d5f;
+        --line: #e3d5bd;
+        --shadow: 0 10px 28px rgba(93, 64, 32, 0.16);
+        --shadow-sm: 0 4px 14px rgba(93, 64, 32, 0.12);
+        --overlay: rgba(43, 33, 22, 0.92);
+        --radius: 18px;
+        --badge-bg: rgba(38, 26, 16, 0.78);
+        --badge-ink: #fdf6e9;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --paper: #241c14;
+          --paper-deep: #2d2318;
+          --card: #33291d;
+          --ink: #f0e6d6;
+          --ink-soft: #bfae94;
+          --accent: #e09a63;
+          --accent-soft: #c98d5f;
+          --line: #4a3b28;
+          --shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+          --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.4);
+          --overlay: rgba(16, 12, 8, 0.94);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--paper);
+        background-image: radial-gradient(var(--paper-deep) 1px, transparent 1px);
+        background-size: 22px 22px;
+        color: var(--ink);
+        font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+        line-height: 1.6;
+      }
+      .serif { font-family: "Songti SC", "STSong", "SimSun", "Noto Serif SC", serif; }
+      main { max-width: 1060px; margin: 0 auto; padding: 28px 18px 56px; }
+
+      /* ---------- 首页 ---------- */
+      .home-head { text-align: center; padding: 14px 6px 26px; }
+      .home-head .over { font-size: 13px; letter-spacing: 0.35em; color: var(--accent); margin: 0 0 10px; }
+      .home-head h1 { font-size: 34px; margin: 0 0 10px; font-weight: 700; letter-spacing: 0.06em; }
+      .home-head p { margin: 0 auto; max-width: 30em; color: var(--ink-soft); font-size: 15px; }
+
+      .theme-card {
+        display: block; width: 100%; text-align: left; cursor: pointer;
+        background: var(--card); border: 1px solid var(--line); border-radius: 24px;
+        padding: 14px 14px 20px; box-shadow: var(--shadow);
+        font: inherit; color: inherit;
+      }
+      .theme-card:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 3px; }
+      .theme-cover { border-radius: 14px; overflow: hidden; aspect-ratio: 4 / 3; background: var(--paper-deep); }
+      .theme-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .theme-body { padding: 18px 8px 0; }
+      .theme-body h2 { font-size: 24px; margin: 0 0 6px; letter-spacing: 0.04em; }
+      .theme-body .intro { margin: 0 0 14px; color: var(--ink-soft); font-size: 15px; }
+      .theme-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+      .theme-count { font-size: 13px; color: var(--ink-soft); }
+      .theme-open {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: var(--accent); color: #fff8ef; border: none;
+        font-size: 15px; padding: 10px 20px; border-radius: 999px; cursor: pointer;
+      }
+      @media (min-width: 720px) {
+        .theme-card { padding: 18px 18px 24px; }
+        .theme-cover { aspect-ratio: 16 / 8; }
+        .home-head h1 { font-size: 40px; }
+      }
+      /* ---------- 首页排版：所有尺寸按一屏高度排版 ----------
+         首页（不分宽窄）改为按动态视口高度排版的弹性列：容器高度取 100dvh，
+         并由脚本按 visualViewport 量到的实际可视高度写入 --app-vh 兜底
+         （避开移动端浏览器工具栏占高），同时兼容安全区；页面外框本身不滚动，
+         页头固定，滚动只发生在相册列表区内部（逐卡吸附，见下方 .home-albums）；
+         卡片文字区固定高度，封面图在卡内弹性收缩（去掉固定宽高比），
+         保证第一张相册卡一进来就完整显示封面、相册名、介绍与打开按钮，
+         上滑后下一张卡也同样整卡对齐显示，不留半张卡在屏边。 */
+      body:has(#homeView:not([hidden])) { overflow: hidden; overscroll-behavior: none; }
+      main:has(> #homeView:not([hidden])) {
+        height: 100vh; height: 100dvh; height: calc(var(--app-vh, 1vh) * 100);
+        max-height: 100vh; max-height: 100dvh; max-height: calc(var(--app-vh, 1vh) * 100);
+        overflow: hidden;
+        display: flex; flex-direction: column;
+        padding: calc(10px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px));
+      }
+      #homeView:not([hidden]) { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; width: 100%; }
+      .home-head { flex: 0 0 auto; padding: 2px 6px 12px; }
+      .home-head .over { margin-bottom: 6px; }
+      .home-head h1 { font-size: 32px; margin-bottom: 6px; }
+      .home-head p { font-size: 14px; }
+      .theme-card { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; overflow: hidden; padding: 12px 12px 14px; }
+      .theme-cover { flex: 1 1 auto; min-height: 0; aspect-ratio: auto; }
+      .theme-cover img { width: 100%; height: 100%; object-fit: cover; object-position: center center; }
+      .theme-body { flex: 0 0 auto; padding: 12px 6px 0; }
+      .theme-body h2 { font-size: 22px; margin-bottom: 4px; }
+      .theme-body .intro { font-size: 14px; margin-bottom: 10px; }
+      .theme-open { flex: none; white-space: nowrap; }
+      /* 宽且高的大屏：页头与卡片回到舒展尺寸 */
+      @media (min-width: 720px) and (min-height: 761px) {
+        main:has(> #homeView:not([hidden])) { padding: calc(16px + env(safe-area-inset-top, 0px)) calc(24px + env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) calc(24px + env(safe-area-inset-left, 0px)); }
+        .home-head h1 { font-size: 38px; }
+        .home-head p { font-size: 15px; }
+        .theme-card { padding: 14px 14px 16px; }
+        .theme-body { padding: 12px 8px 0; }
+        .theme-body h2 { font-size: 23px; }
+        .theme-body .intro { font-size: 15px; }
+      }
+      /* 矮屏（横屏手机、平板分屏等）：收紧页头，介绍最多两行，封面图随剩余高度继续收缩 */
+      @media (max-height: 760px) {
+        .home-head { padding-bottom: 8px; }
+        .home-head .over { font-size: 12px; margin-bottom: 4px; }
+        .home-head h1 { font-size: 30px; }
+        .theme-body { padding-top: 10px; }
+        .theme-body .intro { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+      }
+      /* 更矮的屏：字号与间距再收一档，页头副题限一行，按钮尺寸略缩但完整保留、绝不截断 */
+      @media (max-height: 600px) {
+        main:has(> #homeView:not([hidden])) { padding-top: calc(6px + env(safe-area-inset-top, 0px)); padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)); }
+        .home-head { padding: 0 6px 6px; }
+        .home-head h1 { font-size: 26px; margin-bottom: 2px; }
+        .home-head p { font-size: 13px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .theme-card { padding: 10px 10px 12px; }
+        .theme-body { padding: 8px 4px 0; }
+        .theme-body h2 { font-size: 20px; margin-bottom: 2px; }
+        .theme-body .intro { font-size: 13px; margin-bottom: 8px; }
+        .theme-count { font-size: 12px; }
+        .theme-open { padding: 8px 16px; font-size: 14px; }
+      }
+      /* 极矮屏（横屏小手机）：介绍限一行，封面图缩到剩余高度为止 */
+      @media (max-height: 440px) {
+        .home-head .over { font-size: 11px; margin-bottom: 2px; }
+        .home-head h1 { font-size: 22px; }
+        .theme-body h2 { font-size: 18px; }
+        .theme-body .intro { -webkit-line-clamp: 1; margin-bottom: 6px; }
+      }
+
+      /* ---------- 首页：一级相册列表（可上滑浏览，逐卡吸附） ----------
+         相册不再挤在一屏里平分高度：列表区自己上下滚动，每张相册卡占满
+         列表区一整屏高度（卡片高度自适应内容但不超过一屏可用高度，
+         封面图在卡内弹性收缩），滚动带吸附（scroll-snap），停下时卡片
+         顶部与列表区顶部对齐、整卡完整显示，上下边缘不留半张卡片；
+         后续再添加更多相册也同样逐卡上滑翻看。
+         窄屏一列；宽屏两列同排，行高仍为一整屏，整行吸附对齐、不截断 */
+      .home-albums {
+        flex: 1 1 auto; min-height: 0; width: 100%;
+        display: grid; grid-template-columns: 1fr; grid-auto-rows: 100%;
+        gap: 14px;
+        overflow-y: auto; overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        scroll-snap-type: y mandatory;
+        scrollbar-width: none;
+      }
+      .home-albums::-webkit-scrollbar { display: none; }
+      .home-albums .theme-card {
+        scroll-snap-align: start; scroll-snap-stop: always;
+        height: 100%; min-height: 0;
+      }
+      @media (min-width: 760px) { .home-albums { grid-template-columns: repeat(2, 1fr); } }
+
+      /* ---------- 照片墙 ---------- */
+      .wall-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 6px; }
+      .back-btn {
+        flex: none; margin-top: 0; cursor: pointer;
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 44px; height: 44px; min-width: 44px; min-height: 44px;
+        background: var(--paper); color: var(--accent); border: none;
+        border-radius: 50%; padding: 0; font: inherit;
+        box-shadow: none;
+        -webkit-tap-highlight-color: transparent;
+        transition: transform 0.18s ease, background 0.18s ease;
+      }
+      .back-btn:hover { background: var(--paper-deep); transform: translateY(-1px); }
+      .back-btn:active { transform: translateY(0) scale(0.94); background: var(--paper-deep); }
+      .back-btn:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+      .back-btn svg { display: block; flex: none; }
+      @media (prefers-reduced-motion: reduce) {
+        .back-btn { transition: none; }
+        .back-btn:hover, .back-btn:active { transform: none; }
+      }
+      .wall-head h2 { font-size: 26px; margin: 0; letter-spacing: 0.04em; }
+      .wall-head .sub { color: var(--ink-soft); font-size: 14px; margin: 2px 0 0; }
+      /* ---------- 二级：相册照片网格（原网格样式） ----------
+         手机一列、大屏自适应多列；点照片进三级卡片详情 */
+      .photo-grid {
+        margin-top: 20px;
+        display: grid; grid-template-columns: 1fr; gap: 18px;
+      }
+      @media (min-width: 760px) { .photo-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (min-width: 1100px) { .photo-grid { grid-template-columns: repeat(3, 1fr); } }
+      .photo-card {
+        background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+        padding: 10px 10px 12px; box-shadow: var(--shadow-sm); cursor: pointer;
+        text-align: left; font: inherit; color: inherit; width: 100%;
+      }
+      .photo-card:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+      .photo-card .frame { border-radius: 12px; overflow: hidden; background: var(--paper-deep); aspect-ratio: 4 / 3; }
+      .photo-card img { width: 100%; height: 100%; object-fit: cover; object-position: center center; display: block; }
+      .photo-card .cap { padding: 10px 6px 2px; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+      .photo-card .t { font-size: 17px; font-weight: 700; letter-spacing: 0.03em; }
+      .photo-card .d { font-size: 13px; color: var(--ink-soft); flex: none; }
+      /* 二级网格里的视频卡：16:9 封面 + 播放标记 + 时长角标 */
+      .photo-card .frame.video-frame { aspect-ratio: 16 / 9; background: #1c130b; position: relative; }
+      /* 竖屏视频：按自身比例（3:4 / 9:16，由脚本写入）直立显示，不横置、不裁成横幅 */
+      .photo-card .frame.video-frame.portrait { width: 100%; max-width: 300px; margin: 0 auto; }
+      .photo-card .frame.video-frame img { width: 100%; height: 100%; object-fit: cover; }
+      .play-badge {
+        position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+        width: 52px; height: 52px; border-radius: 50%;
+        background: rgba(30, 19, 10, 0.55); border: 1.5px solid rgba(253, 246, 233, 0.9);
+        display: flex; align-items: center; justify-content: center; pointer-events: none;
+      }
+      .play-badge svg { width: 20px; height: 20px; margin-left: 3px; fill: #fdf6e9; }
+      .dur-badge {
+        position: absolute; right: 8px; bottom: 8px;
+        background: var(--badge-bg); color: var(--badge-ink);
+        font-size: 12px; line-height: 1; padding: 4px 8px; border-radius: 5px;
+        font-variant-numeric: tabular-nums; letter-spacing: 0.04em; pointer-events: none;
+      }
+      .vtag {
+        position: absolute; left: 8px; top: 8px;
+        background: var(--badge-bg); color: var(--badge-ink);
+        font-size: 11px; line-height: 1; padding: 4px 8px; border-radius: 5px; letter-spacing: 0.14em; pointer-events: none;
+      }
+
+      /* ---------- 详情：左右滑动翻看 ---------- */
+      .detail {
+        position: fixed; top: 0; left: 0; right: 0; bottom: auto; z-index: 50; background: var(--overlay);
+        /* 高度按实际可视区算：先给整屏兜底，再用动态视口高度，最后用脚本量到的真实可视高度，
+           避免 iPhone Safari 底部工具栏把卡片下半截挡住 */
+        height: 100vh; height: 100dvh; height: calc(var(--app-vh, 1vh) * 100);
+        display: flex; flex-direction: column;
+        padding: 0;
+      }
+      .detail[hidden] { display: none; }
+      .detail-bar {
+        position: absolute; z-index: 100; pointer-events: none;
+        top: max(10px, env(safe-area-inset-top)); left: 14px; right: 14px;
+        width: auto; max-width: 720px; margin: 0 auto;
+        display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        background: transparent;
+      }
+      .detail-count {
+        color: #fff8ef; font-size: 13px; letter-spacing: 0.08em; flex: none;
+        background: rgba(20, 14, 8, 0.38); border-radius: 999px; padding: 3px 10px;
+        -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+        pointer-events: auto;
+      }
+      .close-btn {
+        flex: none; cursor: pointer; border: 1px solid rgba(255, 248, 239, 0.35); background: rgba(20, 14, 8, 0.38);
+        -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+        color: #fff8ef; border-radius: 50%; width: 40px; height: 40px; padding: 0;
+        font: inherit; font-size: 14px; line-height: 1; pointer-events: auto;
+        display: inline-flex; align-items: center; justify-content: center;
+      }
+      .close-btn:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+      .detail-stage {
+        flex: 1; min-height: 0; position: relative; z-index: 1; overflow: hidden; touch-action: none;
+        overscroll-behavior: none;
+      }
+      /* ---------- 详情：卡片叠放 ----------
+         所有详情卡绝对定位叠在舞台中央：当前卡在最前，后面的卡依次缩小、下移、变淡，
+         像一摞卡片叠放；切换时前一张滑出、下一张从后面顶上来 */
+      .detail-track {
+        position: relative; width: 100%; height: 100%;
+      }
+      .detail-slide {
+        position: absolute; inset: 0; width: 100%; height: 100%;
+        display: flex; align-items: center; justify-content: center;
+        /* 底部多留一段距离：卡片下沿也能越过 Safari 底部浮动工具栏完整露出 */
+        padding: calc(max(10px, env(safe-area-inset-top)) + 42px) 10px calc(30px + env(safe-area-inset-bottom));
+        transition: transform 0.3s cubic-bezier(0.22, 0.9, 0.28, 1), opacity 0.3s ease;
+        will-change: transform, opacity;
+      }
+      .detail-stage.dragging .detail-slide { transition: none; }
+      @media (prefers-reduced-motion: reduce) {
+        .detail-slide { transition: none; }
+      }
+      .detail-item {
+        width: 100%; max-width: 720px; max-height: 100%; margin: 0 auto;
+        display: flex; flex-direction: column; overflow: hidden;
+        background: var(--card); border: 1px solid var(--line); border-radius: 20px;
+        padding: 10px 10px 9px; box-shadow: var(--shadow);
+      }
+      .detail-photo { cursor: zoom-in; flex: 0 1 auto; min-height: 0; display: flex; flex-direction: column; }
+      .detail-photo .frame { flex: 0 1 auto; min-height: 0; }
+      /* 照片容器 flex 居中 + 图片 object-position 居中：cover 裁切上下对称，照片始终居中显示，不贴顶 */
+      .detail-photo .frame { border-radius: 12px; overflow: hidden; background: var(--paper-deep); display: flex; align-items: center; justify-content: center; }
+      /* 详情图高度封顶在可视高度的一半多一点，竖图也不会把标题和信息顶出屏幕；点开全屏仍看原图比例 */
+      .detail-photo img { width: 100%; display: block; object-fit: cover; object-position: center center; max-height: 60dvh; max-height: calc(var(--app-vh, 1vh) * 60); }
+      /* 三级卡片里的视频封面：16:9，点封面进全屏播放 */
+      .detail-photo .frame.video-frame { aspect-ratio: 16 / 9; background: #1c130b; cursor: pointer; position: relative; width: 100%; }
+      .detail-photo .frame.video-frame.portrait { width: 100%; max-width: 340px; margin: 0 auto; }
+      .detail-photo .frame.video-frame img { width: 100%; height: 100%; max-height: none; object-fit: cover; object-position: center center; }
+      .tap-hint { margin: 8px 4px 0; font-size: 12px; color: var(--ink-soft); text-align: right; flex: none; }
+      .detail-info { padding: 10px 8px 0; flex: 0 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+      .detail-info h3 { font-size: 21px; margin: 0 0 6px; letter-spacing: 0.03em; }
+      .detail-info .desc { margin: 0 0 8px; color: var(--ink); font-size: 15px; }
+      .info-list { border-top: 1px dashed var(--line); margin: 0; padding: 3px 0 1px; }
+      .info-list .row { display: flex; gap: 8px; padding: 2px 0; font-size: 12px; line-height: 1.45; }
+      .info-list dt { flex: none; width: 4.2em; color: var(--ink-soft); }
+      .info-list dd { margin: 0; }
+      .info-list .empty { color: var(--ink-soft); }
+
+      /* ---------- 详情：大屏放大（iPad / 桌面宽屏） ----------
+         手机端保持原样；大屏下卡片更宽、照片更高、文字略放大，四周留白明显收窄，
+         顶栏页码与关闭键跟随卡片宽度对齐，卡内仍可上下滚动看完整信息 */
+      @media (min-width: 900px) {
+        .detail-bar { max-width: 1080px; left: 20px; right: 20px; top: max(14px, env(safe-area-inset-top)); }
+        .detail-count { font-size: 14px; padding: 4px 12px; }
+        .close-btn { width: 36px; height: 36px; font-size: 15px; }
+        /* 自适应：卡片整体高度被可视高度封顶，照片区弹性伸缩、信息区超高时在卡内滚动，一屏完整放得下 */
+        .detail-slide {
+          display: flex; align-items: center; justify-content: center;
+          padding: calc(max(14px, env(safe-area-inset-top)) + 52px) 20px calc(20px + env(safe-area-inset-bottom));
+          overflow: hidden;
+        }
+        .detail-item {
+          width: 100%; max-width: 1080px; max-height: 100%;
+          display: flex; flex-direction: column;
+          padding: 14px 14px 13px; border-radius: 22px; overflow: hidden;
+        }
+        .detail-photo { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+        .detail-photo .frame { flex: 1 1 auto; min-height: 0; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+        .detail-photo img { width: 100%; height: 100%; max-height: none; object-fit: cover; object-position: center center; }
+        .tap-hint { font-size: 13px; margin-top: 10px; flex: none; }
+        .detail-info { flex: none; max-height: 42%; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 10px 0; }
+        .detail-info h3 { font-size: 26px; margin-bottom: 8px; }
+        .detail-info .desc { font-size: 17px; margin-bottom: 10px; }
+        .info-list { padding-top: 5px; }
+        .info-list .row { font-size: 14px; line-height: 1.5; padding: 4px 0; }
+      }
+      @media (min-width: 1400px) {
+        .detail-bar { max-width: 1200px; }
+        .detail-item { max-width: 1200px; padding: 16px 16px 15px; }
+        .detail-info h3 { font-size: 28px; }
+        .detail-info .desc { font-size: 18px; }
+        .info-list .row { font-size: 15px; }
+      }
+      /* ---------- 详情：横屏 / 高度受限时一屏完整显示 ----------
+         横屏或视口高度受限时，卡片总高封顶在可视高度内、整卡不滚动出屏；
+         照片区封顶约 42dvh 且居中裁切，信息区在卡内独立滚动，
+         标题/说明/拍摄信息不会把卡片顶出屏幕；
+         顶部留出页码/× 的高度与安全区，不遮挡卡片内容 */
+      @media (orientation: landscape) and (max-height: 700px), (max-height: 560px) {
+        .detail { max-height: 100dvh; max-height: calc(var(--app-vh, 1vh) * 100); }
+        .detail-stage { overflow: hidden; }
+        .detail-slide {
+          padding: calc(max(10px, env(safe-area-inset-top)) + 44px) 10px calc(12px + env(safe-area-inset-bottom));
+        }
+        .detail-item {
+          width: 100%; max-width: 1020px; max-height: 100%;
+          display: flex; flex-direction: column; overflow: hidden;
+        }
+        .detail-photo { flex: 0 1 auto; min-height: 0; display: flex; flex-direction: column; }
+        .detail-photo .frame {
+          flex: 0 1 auto; min-height: 0;
+          display: flex; align-items: center; justify-content: center;
+          max-height: 42dvh; max-height: calc(var(--app-vh, 1vh) * 42);
+        }
+        .detail-photo img {
+          width: 100%; height: 100%;
+          max-height: 42dvh; max-height: calc(var(--app-vh, 1vh) * 42);
+          object-fit: cover; object-position: center center;
+        }
+        .tap-hint { flex: none; }
+        .detail-info {
+          flex: 1 1 auto; min-height: 0; overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+      }
+      /* ---------- 全屏查看 ---------- */
+      .viewer {
+        position: fixed; top: 0; left: 0; right: 0; bottom: auto; z-index: 80; background: #0d0b09;
+        height: 100vh; height: 100dvh; height: calc(var(--app-vh, 1vh) * 100);
+        display: flex; flex-direction: column; color: #f3ead9;
+      }
+      .viewer[hidden] { display: none; }
+      .viewer-bar {
+        position: absolute; z-index: 100; pointer-events: none;
+        top: 0; left: 0; right: 0;
+        display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        padding: max(8px, env(safe-area-inset-top)) 14px 6px;
+        background: transparent;
+      }
+      .viewer-count {
+        font-size: 13px; letter-spacing: 0.08em; color: #fff8ef; flex: none;
+        background: rgba(20, 14, 8, 0.38); border-radius: 999px; padding: 3px 10px;
+        -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+        pointer-events: auto;
+      }
+      .viewer-close {
+        flex: none; cursor: pointer; border: 1px solid rgba(255, 248, 239, 0.35); background: rgba(20, 14, 8, 0.38);
+        -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+        color: #fff8ef; border-radius: 50%; width: 40px; height: 40px; padding: 0;
+        font: inherit; font-size: 14px; line-height: 1; pointer-events: auto;
+        display: inline-flex; align-items: center; justify-content: center;
+      }
+      .viewer-close:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+      .viewer-stage {
+        position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1;
+        overflow: hidden; touch-action: none;
+      }
+      .viewer-track {
+        display: flex; width: 100%; height: 100%;
+        transition: transform 0.38s cubic-bezier(0.22, 0.9, 0.28, 1), opacity 0.3s ease;
+        will-change: transform, opacity;
+      }
+      .viewer-track.dragging { transition: none; }
+      .viewer-slide {
+        flex: 0 0 100%; width: 100%; height: 100%; overflow: hidden;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .viewer-slide img {
+        width: 100%; height: 100%; max-width: 100%; max-height: 100%; object-fit: contain; display: block;
+        object-position: center center;
+        transform-origin: center center; user-select: none; -webkit-user-select: none; will-change: transform;
+      }
+      .viewer-slide video.video-full {
+        width: 100%; max-height: 100%; display: block; background: #000; outline: none;
+        touch-action: none;
+      }
+      @media (min-width: 760px) {
+        .viewer-slide video.video-full { width: min(1060px, 94vw); }
+      }
+      /* 竖屏视频全屏：按高度撑满、宽度按比例，不横置拉伸 */
+      .viewer-slide video.video-full.portrait { width: auto; height: 100%; max-width: 100%; }
+      @media (min-width: 760px) {
+        .viewer-slide video.video-full.portrait { width: auto; }
+      }
+      .viewer-sound {
+        position: absolute; right: 14px; bottom: calc(92px + env(safe-area-inset-bottom)); z-index: 5;
+        cursor: pointer; color: #fdf6e9; font-size: 12.5px; line-height: 1;
+        background: rgba(24, 15, 8, 0.55); border: 1px solid rgba(253, 246, 233, 0.35);
+        border-radius: 999px; padding: 7px 12px; font: inherit;
+      }
+      .viewer-sound:focus-visible { outline: 2px solid #fdf6e9; outline-offset: 2px; }
+      .viewer-sound[hidden] { display: none; }
+      /* ---------- 背景音乐开关：固定在页面右上角，开/关状态一目了然 ---------- */
+      .music-btn {
+        position: fixed; z-index: 45;
+        top: calc(10px + env(safe-area-inset-top)); right: calc(12px + env(safe-area-inset-right));
+        display: inline-flex; align-items: center; gap: 6px;
+        cursor: pointer; font: inherit; font-size: 13px; line-height: 1;
+        color: var(--ink); background: var(--card);
+        border: 1px solid var(--line); border-radius: 999px;
+        padding: 9px 14px; box-shadow: var(--shadow-sm);
+        -webkit-tap-highlight-color: transparent;
+      }
+      .music-btn .music-note { font-size: 15px; color: var(--accent); }
+      .music-btn.off { color: var(--ink-soft); }
+      .music-btn.off .music-note { color: var(--ink-soft); text-decoration: line-through; }
+      .music-btn:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+      .viewer-cap {
+        position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+        max-height: 26%; overflow-y: auto;
+        padding: 10px 16px max(12px, env(safe-area-inset-bottom));
+        background: transparent;
+        -webkit-backdrop-filter: none; backdrop-filter: none;
+        border-top: none;
+        pointer-events: none;
+        transition: opacity 0.18s ease, transform 0.3s cubic-bezier(0.22, 0.9, 0.28, 1);
+      }
+      .viewer-cap.cap-switch { opacity: 0; transform: translateY(8px); }
+      @media (prefers-reduced-motion: reduce) {
+        .viewer-track { transition: none; }
+        .viewer-cap { transition: none; }
+      }
+      .viewer-cap h3 { margin: 0 0 2px; font-size: 16px; letter-spacing: 0.03em; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.85), 0 0 3px rgba(0, 0, 0, 0.9); }
+      .viewer-cap p { margin: 0 0 3px; font-size: 13px; line-height: 1.5; color: #f3ead9; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.85), 0 0 3px rgba(0, 0, 0, 0.9); }
+      .viewer-cap .meta { font-size: 12px; color: #e2d7bf; margin-bottom: 0; }
+      [hidden] { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <!-- 首页（一级）：相册卡片，上滑逐卡浏览 -->
+      <section id="homeView">
+        <header class="home-head">
+          <p class="over">SANYA · 2026.11</p>
+          <h1 class="serif">小小杜的三亚记忆</h1>
+          <p>五天四晚，一家三口，慢慢看。</p>
+        </header>
+
+        <div class="home-albums" id="homeAlbums"></div>
+      </section>
+
+      <!-- 二级：相册照片网格 -->
+      <section id="gridView" hidden>
+        <div class="wall-head">
+          <button class="back-btn" id="gridBackBtn" type="button" aria-label="返回首页"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5" /><path d="m12 19-7-7 7-7" /></svg></button>
+          <div>
+            <h2 class="serif" id="gridTitle"></h2>
+            <p class="sub" id="gridSub"></p>
+          </div>
+        </div>
+        <div class="photo-grid" id="photoGrid"></div>
+      </section>
+    </main>
+
+    <!-- 背景音乐开关：页面内置 Web Audio 合成的轻柔钢琴氛围音，默认开启、音量轻 -->
+    <button class="music-btn" id="musicBtn" type="button" aria-pressed="true" aria-label="关闭背景音乐"><span class="music-note" aria-hidden="true">♪</span><span id="musicBtnText">音乐开</span></button>
+
+    <!-- 照片详情：一摞卡片叠放，左右滑动换卡，下滑退出，卡内信息区可滚动 -->
+    <div class="detail" id="detailView" hidden role="dialog" aria-modal="true" aria-label="照片与视频详情">
+      <div class="detail-bar">
+        <span class="detail-count" id="detailCount"></span>
+        <button class="close-btn" id="closeBtn" type="button" aria-label="关闭">✕</button>
+      </div>
+      <div class="detail-stage" id="detailStage">
+        <div class="detail-track" id="detailTrack"></div>
+      </div>
+    </div>
+
+    <!-- 全屏查看：可缩放，文字在照片下方 -->
+    <div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-label="全屏查看">
+      <div class="viewer-bar">
+        <span class="viewer-count" id="viewerCount"></span>
+        <button class="viewer-close" id="viewerCloseBtn" type="button" aria-label="关闭">✕</button>
+      </div>
+      <div class="viewer-stage" id="viewerStage">
+        <div class="viewer-track" id="viewerTrack"></div>
+      </div>
+      <button class="viewer-sound" id="viewerSoundBtn" type="button" hidden>开启声音</button>
+      <div class="viewer-cap" id="viewerCap">
+        <h3 class="serif" id="viewerTitle"></h3>
+        <p id="viewerDesc"></p>
+        <p class="meta" id="viewerMeta"></p>
+      </div>
+    </div>
+
+    <script>
+      /* 小小杜的三亚记忆：45 条（25 张照片 + 20 段视频），2026-11-17 至 2026-11-21；
+         六段：抵达 / 逛吃 / 园子里 / 亚特兰蒂斯 / 告别 / 花絮 · 会动的片段；
+         照片带 EXIF 日期/地点三亚/设备 iPhone 15，视频不写日期地点 */
+            var ITEMS = [
+        { type: "photo", album: "arrive", src: "assets/p1.jpg", title: "抵达三亚合影", short: "2026.11.17",
+          alt: "爸爸和小朋友在棕榈树下的自拍",
+          desc: "刚下飞机，蓝天和椰子树都在打招呼，先来一张合影。",
+          date: "2026年11月17日 11:34", place: "三亚", device: "iPhone 15" },
+        { type: "photo", album: "arrive", src: "assets/p2.jpg", title: "妈妈举起了手", short: "2026.11.17",
+          alt: "爸爸和小朋友自拍，妈妈在身后高举双手",
+          desc: "身后的妈妈高高举起双手，假期的快乐从这一刻开始。",
+          date: "2026年11月17日 11:35", place: "三亚", device: "iPhone 15" },
+        { type: "photo", album: "arrive", src: "assets/p3.jpg", title: "午饭吃得正香", short: "2026.11.17",
+          alt: "一家三口在酒店餐厅吃午饭，妈妈挥手",
+          desc: "小朋友握着勺子盯着碗，妈妈在旁边笑得停不下来。",
+          date: "2026年11月17日 13:32", place: "三亚", device: "iPhone 15" },
+        { type: "photo", album: "arrive", src: "assets/p4.jpg", title: "笑出声的一刻", short: "2026.11.17",
+          alt: "一家三口推着婴儿车在椰子树下，小朋友笑着伸手",
+          desc: "同一棵椰子树下，这次笑出了声，手还举得高高的。",
+          date: "2026年11月17日 16:52", place: "三亚", device: "iPhone 15" },
+        { type: "photo", album: "eat", src: "assets/p5.jpg", title: "一家三口亲子装", short: "2026.11.18",
+          alt: "一家三口穿着花衬衫在树下合影",
+          desc: "换上花衬衫，一家三口在树下合影，衣服都是一套的。",
+          date: "2026年11月18日 13:53", place: "三亚", device: "iPhone 15" },
+        { type: "photo", album: "eat", src: "assets/p6.jpg", title: "和杰瑞合个影", short: "2026.11.18",
+          alt: "小朋友扶着杰瑞卡通立牌",
+          desc: "小朋友扶着杰瑞的立牌，牌子上还写着请勿触摸，他偏要摸一摸。",
+          date: "2026年11月18日 14:29", place: "三亚", device: "iPhone 15" },
+        { type: "photo", album: "eat", src: "assets/p7.jpg", title: "商场里歇一会", short: "2026.11.18",
+          alt: "妈妈和小朋友趴在商场栏杆上，桌上放着茶壶",
+          desc: "逛累了就趴在栏杆上看风景，桌上还放着一壶茶。",
+          date: "2026年11月18日 14:58", place: "三亚", device: "iPhone 15" },
+        { type: "video", album: "eat", src: "assets/video-01.mp4", poster: "assets/poster-01.jpg", title: "商场里的抱抱",
+          desc: "妈妈抱着小朋友在商场里转，栏杆上还画着卡通画。",
+          dur: "0:05", durText: "时长 5 秒", alt: "妈妈在商场里抱着小朋友" },
+        { type: "photo", album: "eat", src: "assets/p8.jpg", title: "先上桌的海鲜", short: "2026.11.18",
+          alt: "一盘炸好的整条鱼，浇着酸甜汁",
+          desc: "整条鱼炸得金黄，浇上酸甜汁，筷子还没动就先拍一张。",
+          date: "2026年11月18日 15:01", place: "三亚", device: "iPhone 15" },
+        { type: "photo", album: "eat", src: "assets/p9.jpg", title: "一盘白灼鱿鱼", short: "2026.11.18",
+          alt: "一盘白灼鱿鱼，配姜丝和青椒",
+          desc: "鱿鱼卷着须，浇着酱油，姜丝青椒摆得整整齐齐。",
+          date: "2026年11月18日 15:07", place: "三亚", device: "iPhone 15" },
+        { type: "photo", album: "eat", src: "assets/p10.jpg", title: "黑鸭煲配面条", short: "2026.11.18",
+          alt: "一锅黑鸭煲配黄面条",
+          desc: "砂锅里鸭肉煲得油亮，旁边堆着黄面条，牌子上写着销量第一。",
+          date: "2026年11月18日 19:26", place: "三亚", device: "iPhone 15" },
+        { type: "photo", album: "eat", src: "assets/p11.jpg", title: "夜幕下的合影", short: "2026.11.20",
+          alt: "一家三口在夜色灯光下的建筑前合影",
+          desc: "天刚暗下来，身后的楼亮起了红灯，一家三口在灯光里合影。",
+          date: "2026年11月20日 18:27", place: "三亚", device: "iPhone 15" },
+        { type: "video", album: "eat", src: "assets/video-02.mp4", poster: "assets/poster-02.jpg", title: "红灯下的自拍",
+          desc: "夜里楼亮起了红灯，一家三口在灯光下自拍。",
+          dur: "0:10", durText: "时长 10 秒", alt: "一家三口在红灯下自拍" },
+        { type: "photo", album: "eat", src: "assets/p12.jpg", title: "这顿饭吃得开心", short: "2026.11.20",
+          alt: "一家三口在餐厅吃晚饭，小朋友大笑",
+          desc: "同一桌晚饭，这次小朋友笑出了声，妈妈在旁边夹菜。",
+          date: "2026年11月20日 20:49", place: "三亚", device: "iPhone 15" },
+        { type: "video", album: "eat", src: "assets/video-03.mp4", poster: "assets/poster-03.jpg", title: "晚饭桌上的笑声",
+          desc: "晚饭桌上，镜头从爸爸转到小朋友，他对着镜头笑出了声，妈妈在旁边吃饭。",
+          dur: "0:20", durText: "时长 20 秒", alt: "一家三口在餐厅吃晚饭" },
+        { type: "photo", album: "garden", src: "assets/p13.jpg", title: "躺椅上的父子", short: "2026.11.19",
+          alt: "爸爸和小朋友各躺在一张躺椅上",
+          desc: "一人一张躺椅，晒着太阳，什么都不用干。",
+          date: "2026年11月19日 10:48", place: "三亚", device: "iPhone 15" },
+        { type: "photo", album: "garden", src: "assets/p14.jpg", title: "一个人的躺椅", short: "2026.11.19",
+          alt: "小朋友一个人躺在躺椅上",
+          desc: "小小的人占了整张躺椅，靠着椅背发呆，像在度假的老手。",
+          date: "2026年11月19日 10:49", place: "三亚", device: "iPhone 15" },
+        { type: "photo", album: "garden", src: "assets/p15.jpg", title: "晚上的月亮灯", short: "2026.11.19",
+          alt: "夜里妈妈牵着小朋友站在蓝色月亮灯前",
+          desc: "夜里花园亮起了蓝色的月亮和星星，妈妈牵着小手去摸一摸。",
+          date: "2026年11月19日 20:55", place: "三亚", device: "iPhone 15" },
+        { type: "video", album: "garden", src: "assets/video-04.mp4", poster: "assets/poster-04.jpg", title: "夜里水枪大战",
+          desc: "夜里泳池边，小朋友举着紫色水枪，妈妈笑着躲来躲去。",
+          dur: "0:20", durText: "时长 20 秒", alt: "夜里小朋友在泳池边举着水枪", dims: "720 × 1280", ar: "9 / 16" },
+        { type: "photo", album: "garden", src: "assets/p16.jpg", title: "玩水时间到了", short: "2026.11.20",
+          alt: "小朋友拎着橙色小桶玩水",
+          desc: "拎着橙色小桶，拿着水枪，裤子已经湿了一块，玩得正起劲。",
+          date: "2026年11月20日 10:56", place: "三亚", device: "iPhone 15" },
+        { type: "video", album: "garden", src: "assets/video-05.mp4", poster: "assets/poster-05.jpg", title: "玩水枪的下午",
+          desc: "拎着水枪站在泳池边，脚边摆着蓝色大桶和橙色小桶，脸上挂着水珠，笑眯眯的。",
+          dur: "0:23", durText: "时长 23 秒", alt: "小朋友拿着水枪在泳池边玩水", dims: "720 × 1280", ar: "9 / 16" },
+        { type: "photo", album: "garden", src: "assets/p17.jpg", title: "泳池边的举高高", short: "2026.11.20",
+          alt: "妈妈在泳池边把小朋友举起来，背后是草编爱心",
+          desc: "泳池边的草编爱心里，妈妈把小朋友举了起来，他笑得咧开了嘴。",
+          date: "2026年11月20日 11:29", place: "三亚", device: "iPhone 15" },
+        { type: "video", album: "garden", src: "assets/video-06.mp4", poster: "assets/poster-06.jpg", title: "小车里的张望",
+          desc: "坐在小车里，路过水边，眼睛四处张望。",
+          dur: "0:10", durText: "时长 10 秒", alt: "小朋友坐在小车里看水边" },
+        { type: "video", album: "garden", src: "assets/video-07.mp4", poster: "assets/poster-07.jpg", title: "戴上头盔兜风",
+          desc: "爸爸戴着头盔骑车，小朋友戴着粉色头盔坐在后面，笑得眯起了眼。",
+          dur: "0:14", durText: "时长 14 秒", alt: "爸爸骑车带小朋友兜风" },
+        { type: "photo", album: "atlantis", src: "assets/p18.jpg", title: "一大群鱼游过", short: "2026.11.20",
+          alt: "水族箱里成群的鱼",
+          desc: "一群群鱼从蓝色的水里游过，整面墙都是海。",
+          date: "2026年11月20日 13:59", place: "三亚", device: "iPhone 15" },
+        { type: "video", album: "atlantis", src: "assets/video-08.mp4", poster: "assets/poster-08.jpg", title: "豹纹鲨游过去",
+          desc: "大鱼缸里，一条豹纹鲨慢慢游过去，身后跟着一大群鱼。",
+          dur: "0:11", durText: "时长 11 秒", alt: "豹纹鲨在大鱼缸里游过" },
+        { type: "photo", album: "atlantis", src: "assets/p19.jpg", title: "比人还大的鸭子", short: "2026.11.20",
+          alt: "小朋友站在黄色大鸭子雕像旁",
+          desc: "黄色的大鸭子抱着绿杯子，小朋友站在旁边，才到它腰那么高。",
+          date: "2026年11月20日 14:39", place: "三亚", device: "iPhone 15" },
+        { type: "photo", album: "atlantis", src: "assets/p20.jpg", title: "和小熊维尼合影", short: "2026.11.20",
+          alt: "小朋友站在小熊维尼雕像旁",
+          desc: "维尼抱着一捧粉色的花，小朋友站在它脚边，仰头看着它。",
+          date: "2026年11月20日 14:49", place: "三亚", device: "iPhone 15" },
+        { type: "photo", album: "atlantis", src: "assets/p21.jpg", title: "亚特兰蒂斯一日", short: "2026.11.20",
+          alt: "妈妈抱着小朋友和一排演出服演员合影",
+          desc: "一排穿着演出服的演员站在水族箱前，妈妈抱着小朋友加入合影。",
+          date: "2026年11月20日 15:23", place: "三亚", device: "iPhone 15" },
+        { type: "video", album: "atlantis", src: "assets/video-09.mp4", poster: "assets/poster-09.jpg", title: "看演员们表演",
+          desc: "妈妈抱着小朋友看一排穿演出服的演员，旁边还有个小姑娘在跳舞。",
+          dur: "0:14", durText: "时长 14 秒", alt: "妈妈抱着小朋友看演出服演员" },
+        { type: "video", album: "atlantis", src: "assets/video-10.mp4", poster: "assets/poster-10.jpg", title: "坐在地上看热闹",
+          desc: "小朋友坐在商场光亮的地板上，周围人来人往，他只顾看自己的热闹。",
+          dur: "0:11", durText: "时长 11 秒", alt: "小朋友坐在商场地板上", dims: "720 × 960", ar: "3 / 4" },
+        { type: "photo", album: "atlantis", src: "assets/p22.jpg", title: "大鱼缸前的人群", short: "2026.11.20",
+          alt: "大鱼缸前站满了看鱼的游客",
+          desc: "大鱼缸前站满了人，鱼群从头顶游过，大家都抬着头看。",
+          date: "2026年11月20日 15:44", place: "三亚", device: "iPhone 15" },
+        { type: "video", album: "atlantis", src: "assets/video-11.mp4", poster: "assets/poster-11.jpg", title: "大鱼缸与人群",
+          desc: "大鱼缸前站满了人，鱼群从头顶游过，还有一条鳐鱼从上面滑过。",
+          dur: "0:21", durText: "时长 21 秒", alt: "大鱼缸前的人群和鱼群" },
+        { type: "video", album: "atlantis", src: "assets/video-12.mp4", poster: "assets/poster-12.jpg", title: "大鱼缸前自拍",
+          desc: "一家三口站在大鱼缸前自拍，鱼群从头顶游过。",
+          dur: "0:08", durText: "时长 8 秒", alt: "一家三口在大鱼缸前自拍" },
+        { type: "video", album: "atlantis", src: "assets/video-13.mp4", poster: "assets/poster-13.jpg", title: "鱼群背景自拍",
+          desc: "一家三口在鱼群前自拍，头顶全是游来游去的鱼。",
+          dur: "0:12", durText: "时长 12 秒", alt: "一家三口在鱼群前自拍" },
+        { type: "video", album: "atlantis", src: "assets/video-14.mp4", poster: "assets/poster-14.jpg", title: "鱼缸前的一家人",
+          desc: "一家三口挤在镜头前，身后是整面墙的鱼，妈妈笑得合不拢嘴。",
+          dur: "0:40", durText: "时长 40 秒", alt: "一家三口在大鱼缸前合影" },
+        { type: "photo", album: "atlantis", src: "assets/p23.jpg", title: "再来一张全家福", short: "2026.11.20",
+          alt: "一家三口在水族馆大鱼缸前合影，小朋友举起手",
+          desc: "换个姿势再来一张，小朋友把手举得高高的，笑得更开了。",
+          date: "2026年11月20日 15:56", place: "三亚", device: "iPhone 15" },
+        { type: "photo", album: "farewell", src: "assets/p24.jpg", title: "最后一天的日出", short: "2026.11.21",
+          alt: "阳台望出去的日出，海天和岛屿",
+          desc: "最后一天早上，阳台望出去，云被染成金色，海的那边是岛。",
+          date: "2026年11月21日 07:09", place: "三亚", device: "iPhone 15" },
+        { type: "photo", album: "farewell", src: "assets/p25.jpg", title: "草坪上的告别", short: "2026.11.21",
+          alt: "一家三口在草坪上合影，身后有粉色爱心牌子",
+          desc: "走之前在草坪上合影，身后的牌子写着很想你，下次再来。",
+          date: "2026年11月21日 09:29", place: "三亚", device: "iPhone 15" },
+        { type: "video", album: "farewell", src: "assets/video-15.mp4", poster: "assets/poster-15.jpg", title: "海边草坪合影",
+          desc: "海边的草坪上，一家三口自拍，妈妈还比了个耶。",
+          dur: "0:17", durText: "时长 17 秒", alt: "一家三口在海边草坪上自拍" },
+        { type: "video", album: "clips", src: "assets/video-16.mp4", poster: "assets/poster-16.jpg", title: "朝着镜头走来",
+          desc: "椰子树下的石板路，小朋友朝着镜头走过来，爸爸跟在后面。",
+          dur: "0:06", durText: "时长 6 秒", alt: "小朋友在椰子树下的石板路上朝镜头走来", dims: "720 × 960", ar: "3 / 4" },
+        { type: "video", album: "clips", src: "assets/video-17.mp4", poster: "assets/poster-17.jpg", title: "草坪上看小灯",
+          desc: "站在草坪上，盯着灌木丛里的白色小灯，看得入了神。",
+          dur: "0:03", durText: "时长 3 秒", alt: "小朋友站在草坪上看灌木丛里的小灯", dims: "720 × 960", ar: "3 / 4" },
+        { type: "video", album: "clips", src: "assets/video-18.mp4", poster: "assets/poster-18.jpg", title: "酒店走廊散步",
+          desc: "酒店的走廊里，小朋友走在前面，妈妈推着小车跟在后面。",
+          dur: "0:07", durText: "时长 7 秒", alt: "小朋友在酒店走廊里走，妈妈推着婴儿车", dims: "720 × 960", ar: "3 / 4" },
+        { type: "video", album: "clips", src: "assets/video-19.mp4", poster: "assets/poster-19.jpg", title: "夜里泳池边玩水",
+          desc: "夜里泳池边，小朋友蹲在池边伸手够水，妈妈就站在旁边看着。",
+          dur: "0:44", durText: "时长 44 秒", alt: "夜里小朋友蹲在泳池边伸手够水", dims: "720 × 1280", ar: "9 / 16" },
+        { type: "video", album: "clips", src: "assets/video-20.mp4", poster: "assets/poster-20.jpg", title: "水枪对准泳池",
+          desc: "妈妈牵着小手，小朋友举着紫色水枪往泳池里喷水。",
+          dur: "0:04", durText: "时长 4 秒", alt: "夜里妈妈牵着小朋友在泳池边用水枪喷水", dims: "720 × 960", ar: "3 / 4" }
+      ];
+
+      var PLAY_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.8v14.4c0 .9 1 1.5 1.8 1L20 13a1.2 1.2 0 0 0 0-2L8.8 3.9C8 3.4 7 4 7 4.8z"/></svg>';
+
+      /* iPhone Safari 的底部工具栏浮在页面上，按整屏高度排的弹层会被它挡住下半截：
+         用 visualViewport 量到的实际可视高度驱动弹层高度（CSS 变量 --app-vh） */
+      function setAppVh() {
+        var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight || 0;
+        if (h > 0) document.documentElement.style.setProperty("--app-vh", (h / 100) + "px");
+      }
+      setAppVh();
+      window.addEventListener("resize", setAppVh);
+      window.addEventListener("orientationchange", setAppVh);
+      if (window.visualViewport) window.visualViewport.addEventListener("resize", setAppVh);
+
+      /* 分组按画面内容与发送顺序归类，共 6 个相册：云端之上（高空照片）、人间烟火（地面生活）、
+         湖畔时光（湖边照片与视频）、动物园一日（动物与园内造景）、北京印象（北京街景）、
+         机坪日常（巴里坤机场）。组内保持原有/发送先后顺序，照片的文案、日期、地点、设备照计划文件，
+         视频不编造日期地点。cover 为封面在 ITEMS 中的下标 */
+            var ALBUMS = [
+        { id: "arrive", title: "抵达", intro: "2026 年 11 月 17 日，落地三亚——蓝天、椰子树，假期从这一刻开始。",
+          cover: 0, countText: "共 4 张照片", sub: "共 4 张照片" },
+        { id: "eat", title: "逛吃", intro: "吃吃逛逛：商场、花衬衫、海鲜，还有晚饭桌上的笑声。",
+          cover: 4, countText: "共 11 条 · 8 张照片 + 3 段视频", sub: "共 11 条 · 8 张照片 + 3 段视频" },
+        { id: "garden", title: "园子里", intro: "酒店的园子里：躺椅、泳池、月亮灯，和一场水枪大战。",
+          cover: 15, countText: "共 9 条 · 5 张照片 + 4 段视频", sub: "共 9 条 · 5 张照片 + 4 段视频" },
+        { id: "atlantis", title: "亚特兰蒂斯", intro: "水族馆的一天：大鱼、鸭子、维尼，还有一排演出服演员。",
+          cover: 24, countText: "共 13 条 · 6 张照片 + 7 段视频", sub: "共 13 条 · 6 张照片 + 7 段视频" },
+        { id: "farewell", title: "告别", intro: "最后一天：阳台上的日出，和草坪上的合影。",
+          cover: 38, countText: "共 3 条 · 2 张照片 + 1 段视频", sub: "共 3 条 · 2 张照片 + 1 段视频" },
+        { id: "clips", title: "花絮 · 会动的片段", intro: "会动的片段——走路、看灯、玩水，都是随手拍的小时刻。",
+          cover: 17, countText: "共 5 段视频", sub: "共 5 段视频" }
+      ];
+      function albumItems(album) {
+        var list = [];
+        ITEMS.forEach(function (it, i) { if (it.album === album.id) list.push(i); });
+        return list;
+      }
+      var currentAlbum = null;      /* 当前打开的相册（ALBUMS 之一） */
+      var detailList = [];          /* 当前相册内照片的 ITEMS 下标，三级/四级只在此范围内切换 */
+
+      var homeView = document.getElementById("homeView");
+      var gridView = document.getElementById("gridView");
+      var detailView = document.getElementById("detailView");
+      var homeAlbums = document.getElementById("homeAlbums");
+      var photoGrid = document.getElementById("photoGrid");
+      var current = 0;
+      var lastFocus = null;
+
+      /* 一级（首页）：展示全部相册卡片，各用组内代表性照片作封面、注明条数与简介 */
+      ALBUMS.forEach(function (album) {
+        var coverP = ITEMS[album.cover];
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "theme-card";
+        btn.setAttribute("aria-label", "打开相册：" + album.title + "，" + album.countText);
+        var cover = document.createElement("div");
+        cover.className = "theme-cover";
+        var img = document.createElement("img");
+        img.src = coverP.src; img.alt = coverP.alt; img.loading = "lazy";
+        cover.appendChild(img);
+        var body = document.createElement("div");
+        body.className = "theme-body";
+        var h = document.createElement("h2");
+        h.className = "serif"; h.textContent = album.title;
+        var intro = document.createElement("p");
+        intro.className = "intro"; intro.textContent = album.intro;
+        var meta = document.createElement("div");
+        meta.className = "theme-meta";
+        var count = document.createElement("span");
+        count.className = "theme-count"; count.textContent = album.countText;
+        var open = document.createElement("span");
+        open.className = "theme-open"; open.textContent = "打开相册 →";
+        meta.appendChild(count); meta.appendChild(open);
+        body.appendChild(h); body.appendChild(intro); body.appendChild(meta);
+        btn.appendChild(cover); btn.appendChild(body);
+        btn.addEventListener("click", function () { openAlbum(album, btn); });
+        homeAlbums.appendChild(btn);
+      });
+
+      /* 二级：当前相册的照片网格（原网格样式），点照片进三级卡片详情 */
+      function buildGrid() {
+        photoGrid.innerHTML = "";
+        detailList.forEach(function (gi) {
+          var p = ITEMS[gi];
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "photo-card";
+          var frame = document.createElement("div");
+          var img = document.createElement("img");
+          img.alt = p.alt; img.loading = "lazy";
+          if (p.type === "video") {
+            btn.setAttribute("aria-label", "查看视频：" + p.title + "，" + p.durText);
+            frame.className = "frame video-frame" + (p.ar ? " portrait" : "");
+            if (p.ar) frame.style.aspectRatio = p.ar;
+            img.src = p.poster;
+            frame.appendChild(img);
+            var vtag = document.createElement("span");
+            vtag.className = "vtag"; vtag.textContent = "视频";
+            frame.appendChild(vtag);
+            var play = document.createElement("span");
+            play.className = "play-badge"; play.innerHTML = PLAY_SVG;
+            frame.appendChild(play);
+            var dur = document.createElement("span");
+            dur.className = "dur-badge"; dur.textContent = p.dur;
+            frame.appendChild(dur);
+          } else {
+            btn.setAttribute("aria-label", "查看照片：" + p.title);
+            frame.className = "frame";
+            img.src = p.src;
+            frame.appendChild(img);
+          }
+          var cap = document.createElement("div");
+          cap.className = "cap";
+          var t = document.createElement("span");
+          t.className = "t serif"; t.textContent = p.title;
+          var d = document.createElement("span");
+          d.className = "d"; d.textContent = p.type === "video" ? ("视频 · " + p.dur) : p.short;
+          cap.appendChild(t); cap.appendChild(d);
+          btn.appendChild(frame); btn.appendChild(cap);
+          btn.addEventListener("click", function () { openDetail(gi, btn); });
+          photoGrid.appendChild(btn);
+        });
+      }
+
+      /* 点一级相册进二级网格；返回路径：三级 → 二级网格 → 一级相册列表 */
+      function openAlbum(album) {
+        currentAlbum = album;
+        detailList = albumItems(album);
+        document.getElementById("gridTitle").textContent = album.title;
+        document.getElementById("gridSub").textContent = album.sub;
+        buildGrid();
+        homeView.hidden = true;
+        gridView.hidden = false;
+        window.scrollTo(0, 0);
+      }
+      function showHome() {
+        gridView.hidden = true;
+        homeView.hidden = false;
+        window.scrollTo(0, 0);
+      }
+      document.getElementById("gridBackBtn").addEventListener("click", showHome);
+
+      /* ---------- 详情：左右滑动切换，一张详情占一屏，卡内可上下滚动 ---------- */
+      var detailStage = document.getElementById("detailStage");
+      var detailTrack = document.getElementById("detailTrack");
+      var detailSlides = [];
+      var detailInfos = [];
+      var dIndex = 0;
+      var dPointers = {};
+      var dGesture = null, dDragX = 0, dDragY = 0, dMode = null, dSuppressClick = false, dAnimating = false;
+
+      function infoRow(label, value, isEmpty) {
+        var row = document.createElement("div");
+        row.className = "row";
+        var dt = document.createElement("dt");
+        dt.textContent = label;
+        var dd = document.createElement("dd");
+        dd.textContent = value;
+        if (isEmpty) dd.className = "empty";
+        row.appendChild(dt); row.appendChild(dd);
+        return row;
+      }
+
+      function buildDetailSlides() {
+        detailTrack.innerHTML = "";
+        detailSlides = [];
+        detailInfos = [];
+        detailList.forEach(function (gi, i) {
+        var p = ITEMS[gi];
+        var slide = document.createElement("div");
+        slide.className = "detail-slide";
+
+        var item = document.createElement("article");
+        item.className = "detail-item";
+
+        var photoCard = document.createElement("div");
+        photoCard.className = "detail-photo";
+        photoCard.setAttribute("role", "button");
+        photoCard.setAttribute("tabindex", "0");
+        var frame = document.createElement("div");
+        var img = document.createElement("img");
+        img.alt = p.alt; img.loading = "lazy"; img.draggable = false;
+        var tap = document.createElement("p");
+        tap.className = "tap-hint";
+        if (p.type === "video") {
+          photoCard.setAttribute("aria-label", "全屏播放视频：" + p.title);
+          frame.className = "frame video-frame" + (p.ar ? " portrait" : "");
+          if (p.ar) frame.style.aspectRatio = p.ar;
+          img.src = p.poster;
+          frame.appendChild(img);
+          var vtag2 = document.createElement("span");
+          vtag2.className = "vtag"; vtag2.textContent = "视频";
+          frame.appendChild(vtag2);
+          var play2 = document.createElement("span");
+          play2.className = "play-badge"; play2.innerHTML = PLAY_SVG;
+          frame.appendChild(play2);
+          var dur2 = document.createElement("span");
+          dur2.className = "dur-badge"; dur2.textContent = p.dur;
+          frame.appendChild(dur2);
+          tap.textContent = "点击封面，全屏播放视频";
+        } else {
+          photoCard.setAttribute("aria-label", "全屏查看照片：" + p.title);
+          frame.className = "frame";
+          img.src = p.src;
+          frame.appendChild(img);
+          tap.textContent = "点击照片，全屏看大图";
+        }
+        photoCard.appendChild(frame); photoCard.appendChild(tap);
+        photoCard.addEventListener("click", function () {
+          if (dSuppressClick) { dSuppressClick = false; return; }
+          openViewer(i);
+        });
+        photoCard.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openViewer(i); }
+        });
+
+        var info = document.createElement("div");
+        info.className = "detail-info";
+        var h = document.createElement("h3");
+        h.className = "serif"; h.textContent = p.title;
+        var desc = document.createElement("p");
+        desc.className = "desc"; desc.textContent = p.desc;
+        var dl = document.createElement("dl");
+        dl.className = "info-list";
+        if (p.type === "video") {
+          dl.appendChild(infoRow("类型", "视频", false));
+          dl.appendChild(infoRow("时长", p.durText.replace("时长 ", ""), false));
+          dl.appendChild(infoRow("画面", (p.dims || "1280 × 720") + " · MP4", false));
+          dl.appendChild(infoRow("日期地点", "这段视频没有附，就不替它编了", true));
+        } else {
+          dl.appendChild(infoRow("拍摄日期", p.date || "", false));
+          dl.appendChild(infoRow("地点", p.place ? p.place : "照片信息里没有记录", !p.place));
+          dl.appendChild(infoRow("拍摄设备", p.device || "", false));
+        }
+        info.appendChild(h); info.appendChild(desc); info.appendChild(dl);
+
+        item.appendChild(photoCard); item.appendChild(info);
+        slide.appendChild(item);
+        detailTrack.appendChild(slide);
+        detailSlides.push(slide);
+        detailInfos.push(info);
+        });
+      }
+
+      function updateDetailCount() {
+        current = dIndex;
+        document.getElementById("detailCount").textContent = (dIndex + 1) + " / " + detailList.length;
+      }
+      /* 卡片叠放布局：按每张卡相对当前卡的位置算位移/缩放/透明度。
+         dragging 时根据跟手位移插值：横滑时后面的卡顶上来（或上一张从左侧滑回），
+         下滑退出时当前卡下移并渐淡 */
+      function layoutStack() {
+        var w = detailStage.clientWidth || window.innerWidth || 1;
+        var h = detailStage.clientHeight || window.innerHeight || 1;
+        var prog = 0; /* 横滑进度 0~1：下一张顶上来的程度 */
+        var backProg = 0; /* 右滑进度 0~1：上一张滑回的程度 */
+        if (dMode === "h") {
+          if (dDragX < 0 && dIndex < detailList.length - 1) prog = Math.min(1, -dDragX / w);
+          if (dDragX > 0 && dIndex > 0) backProg = Math.min(1, dDragX / w);
+        }
+        detailSlides.forEach(function (slide, idx) {
+          var off = idx - dIndex;
+          var t = "", op = 1, z = 1, pe = "none", vis = "visible";
+          if (off === 0) {
+            z = 30;
+            pe = "auto";
+            if (dMode === "h") {
+              if (backProg > 0) {
+                /* 右滑看上一张：当前卡沉回后面一层 */
+                t = "translate3d(0, " + (16 * backProg) + "px, 0) scale(" + (1 - 0.045 * backProg) + ")";
+                op = 1 - 0.18 * backProg;
+              } else {
+                var ex = dDragX;
+                if ((dIndex === 0 && ex > 0) || (dIndex === detailList.length - 1 && ex < 0)) ex = ex * 0.35; /* 首尾阻尼 */
+                t = "translate3d(" + ex + "px, 0, 0) scale(1)";
+              }
+            } else if (dMode === "v") {
+              t = "translate3d(0, " + dDragY + "px, 0) scale(1)";
+              op = Math.max(0.25, 1 - (dDragY / h) * 0.9);
+            } else {
+              t = "translate3d(0, 0, 0) scale(1)";
+            }
+          } else if (off === -1) {
+            z = 40;
+            if (backProg > 0) {
+              pe = "auto";
+              t = "translate3d(" + (-w * (1 - backProg)) + "px, 0, 0) scale(1)";
+            } else {
+              t = "translate3d(" + (-w * 1.15) + "px, 0, 0) scale(1)";
+              vis = "hidden";
+            }
+          } else if (off === 1) {
+            z = 20;
+            t = "translate3d(0, " + (16 * (1 - prog)) + "px, 0) scale(" + (0.955 + 0.045 * prog) + ")";
+            op = 0.82 + 0.18 * prog;
+          } else if (off === 2) {
+            z = 10;
+            t = "translate3d(0, " + (32 - 16 * prog) + "px, 0) scale(" + (0.91 + 0.045 * prog) + ")";
+            op = 0.55 + 0.27 * prog;
+          } else if (off > 2) {
+            z = 1;
+            t = "translate3d(0, 32px, 0) scale(0.91)";
+            op = 0; vis = "hidden";
+          } else { /* off < -1：已经翻过去的卡，藏在左侧外面 */
+            z = 1;
+            t = "translate3d(" + (-w * 1.15) + "px, 0, 0) scale(1)";
+            op = 0; vis = "hidden";
+          }
+          slide.style.transform = t;
+          slide.style.opacity = op;
+          slide.style.zIndex = z;
+          slide.style.pointerEvents = pe;
+          slide.style.visibility = vis;
+        });
+      }
+      /* 切换到指定照片的详情：靠每张卡的 CSS 过渡完成滑出/顶上动画 */
+      function goToDetail(n, instant) {
+        if (n < 0 || n >= detailList.length || n === dIndex) { layoutStack(); return; }
+        dIndex = n;
+        dMode = null; dDragX = 0; dDragY = 0;
+        if (instant || reduceMotion) {
+          detailStage.classList.add("dragging");
+          layoutStack();
+          void detailStage.offsetWidth;
+          detailStage.classList.remove("dragging");
+        } else {
+          layoutStack();
+        }
+        if (detailInfos[dIndex]) detailInfos[dIndex].scrollTop = 0;
+        updateDetailCount();
+      }
+
+      function openDetail(gi, fromEl) {
+        setAppVh(); /* 打开前按当前工具栏状态重新量一次可视高度 */
+        current = gi;
+        var pos = detailList.indexOf(gi);
+        dIndex = pos >= 0 ? pos : 0;
+        buildDetailSlides();
+        buildViewerSlides();
+        dMode = null; dDragX = 0; dDragY = 0; dGesture = null; dAnimating = false;
+        lastFocus = fromEl || null;
+        detailView.hidden = false;
+        document.body.style.overflow = "hidden";
+        detailInfos.forEach(function (inf) { inf.scrollTop = 0; });
+        detailStage.classList.add("dragging");
+        layoutStack();
+        void detailStage.offsetWidth;
+        detailStage.classList.remove("dragging");
+        updateDetailCount();
+        document.getElementById("closeBtn").focus();
+      }
+      function closeDetail() {
+        detailView.hidden = true;
+        document.body.style.overflow = "";
+        if (lastFocus) lastFocus.focus();
+      }
+      /* 三级右上角 × ：顶栏已提到卡片层之上（z-index 100，舞台为独立层叠上下文），
+         再单独绑定轻点（pointerup）与 click 两路关闭，并拦下 pointerdown 不让舞台手势接管，
+         保证点 × 直接关闭回二级网格，与下滑退出互不影响 */
+      var detailCloseBtn = document.getElementById("closeBtn");
+      detailCloseBtn.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+      detailCloseBtn.addEventListener("pointerup", function (e) { e.stopPropagation(); closeDetail(); });
+      detailCloseBtn.addEventListener("click", closeDetail);
+
+      /* 详情手势：主方向判定——横向为主左右滑换卡（跟手、过阈值换一张、否则回弹）；
+         纵向向下为主且信息区已滚到顶部时，下滑跟手下移渐淡、过阈值退出回二级相册列表；
+         信息区没滚到顶部的纵向滑动手动滚信息区，不触发退出，避免冲突。
+         舞台 touch-action:none，纵向滚动由这里接管（滚轮仍走原生） */
+      detailStage.addEventListener("pointerdown", function (e) {
+        if (dAnimating) return;
+        dPointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+        if (Object.keys(dPointers).length === 1) {
+          var info = (e.target && e.target.closest) ? e.target.closest(".detail-info") : null;
+          dGesture = {
+            x: e.clientX, y: e.clientY,
+            info: (info && detailInfos[dIndex] === info) ? info : null,
+            infoTop: info ? info.scrollTop : 0
+          };
+          dMode = null; dDragX = 0; dDragY = 0;
+        } else {
+          /* 多指介入：取消当前手势并回位 */
+          dGesture = null;
+          if (dMode) {
+            dMode = null; dDragX = 0; dDragY = 0;
+            detailStage.classList.remove("dragging");
+            layoutStack();
+          }
+        }
+      });
+      detailStage.addEventListener("pointermove", function (e) {
+        if (!dPointers[e.pointerId] || dAnimating) return;
+        dPointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+        if (Object.keys(dPointers).length !== 1 || !dGesture) return;
+        var dx = e.clientX - dGesture.x;
+        var dy = e.clientY - dGesture.y;
+        if (!dMode) {
+          if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+          /* 主方向锁定：横向明显占优走换卡；纵向明显占优走滚动/退出 */
+          if (Math.abs(dx) > Math.abs(dy) * 1.15) dMode = "h";
+          else if (Math.abs(dy) > Math.abs(dx) * 1.15) dMode = "v";
+          else return;
+          detailStage.classList.add("dragging");
+          try { detailStage.setPointerCapture(e.pointerId); } catch (err) {}
+        }
+        if (dMode === "h") {
+          dDragX = dx; dDragY = 0;
+          layoutStack();
+        } else if (dMode === "v") {
+          var info = dGesture.info;
+          if (dy < 0) {
+            /* 上滑：滚信息区看下面，不动卡片 */
+            if (info) info.scrollTop = dGesture.infoTop - dy;
+            dDragY = 0;
+          } else {
+            /* 下滑：先把信息区滚回顶部，超出的部分才变成退出位移 */
+            var used = 0;
+            if (info && dGesture.infoTop > 0) {
+              used = Math.min(dy, dGesture.infoTop);
+              info.scrollTop = dGesture.infoTop - used;
+            }
+            dDragY = dy - used;
+          }
+          dDragX = 0;
+          layoutStack();
+        }
+      });
+      /* 横滑过阈值：先把动画演完（前卡滑出/上一张滑回），再落定新序号重排叠放 */
+      function commitDetailSwipe(dir) {
+        var w = detailStage.clientWidth || window.innerWidth || 1;
+        if (reduceMotion) { goToDetail(dIndex + dir, true); return; }
+        dAnimating = true;
+        dMode = "h";
+        /* dir=1 看下一张：当前卡飞向左侧；dir=-1 看上一张：上一张从左侧滑回到位 */
+        dDragX = dir > 0 ? -w : w;
+        layoutStack();
+        setTimeout(function () {
+          dAnimating = false;
+          goToDetail(dIndex + dir, true);
+        }, 190);
+      }
+      /* 下滑过阈值：卡片继续下滑并淡出，然后退出回二级相册列表 */
+      function commitDetailExit() {
+        var h = detailStage.clientHeight || window.innerHeight || 1;
+        if (reduceMotion) { closeDetail(); layoutStack(); return; }
+        dAnimating = true;
+        dMode = "v";
+        dDragY = h * 0.55;
+        layoutStack();
+        setTimeout(function () {
+          dAnimating = false;
+          closeDetail();
+          dMode = null; dDragX = 0; dDragY = 0;
+          detailStage.classList.add("dragging");
+          layoutStack();
+          void detailStage.offsetWidth;
+          detailStage.classList.remove("dragging");
+        }, 250);
+      }
+      function endDetailPointer(e) {
+        var wasLast = Object.keys(dPointers).length === 1 && dPointers[e.pointerId];
+        delete dPointers[e.pointerId];
+        if (Object.keys(dPointers).length !== 0) return;
+        detailStage.classList.remove("dragging");
+        if (wasLast && dGesture && e.type === "pointerup" && dMode) {
+          var dx = e.clientX - dGesture.x;
+          var dy = e.clientY - dGesture.y;
+          var w = detailStage.clientWidth || window.innerWidth || 1;
+          var h = detailStage.clientHeight || window.innerHeight || 1;
+          var thX = Math.max(30, Math.min(52, w * 0.11));
+          var thY = Math.max(70, Math.min(120, h * 0.16));
+          if (Math.abs(dx) >= 10 || dDragY >= 10) dSuppressClick = true;
+          if (dMode === "h" && Math.abs(dx) >= thX && Math.abs(dx) > Math.abs(dy) * 1.2) {
+            if (dx < 0 && dIndex < detailList.length - 1) { commitDetailSwipe(1); dGesture = null; return; }
+            if (dx > 0 && dIndex > 0) { commitDetailSwipe(-1); dGesture = null; return; }
+          }
+          if (dMode === "v" && dDragY >= thY && dy > Math.abs(dx) * 1.2) {
+            commitDetailExit();
+            dGesture = null;
+            return;
+          }
+          /* 没过阈值：带过渡弹回原位 */
+          dMode = null; dDragX = 0; dDragY = 0;
+          layoutStack();
+        } else {
+          dMode = null; dDragX = 0; dDragY = 0;
+          layoutStack();
+        }
+        dGesture = null;
+      }
+      detailStage.addEventListener("pointerup", endDetailPointer);
+      detailStage.addEventListener("pointercancel", endDetailPointer);
+
+      /* ---------- 全屏查看：左右滑动带动画切换，双指/滚轮缩放，放大后可拖动 ---------- */
+      var viewer = document.getElementById("viewer");
+      var stage = document.getElementById("viewerStage");
+      var track = document.getElementById("viewerTrack");
+      var viewerCap = document.getElementById("viewerCap");
+      var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var vIndex = 0, vScale = 1, vX = 0, vY = 0;
+      var slideImgs = [];
+      var slideVids = [];
+      var soundBtn = document.getElementById("viewerSoundBtn");
+      /* 全局声音开关：所有视频共用，切片、进出全屏、关闭再打开都保持 */
+      var globalMuted = true;
+      var suppressVideoClickUntil = 0;
+      var swipeFromVideo = false;
+      function curItem() { return ITEMS[detailList[vIndex]]; }
+      function curVid() { return slideVids[vIndex]; }
+      function updateSoundBtn() {
+        if (curVid()) {
+          soundBtn.hidden = false;
+          soundBtn.textContent = globalMuted ? "开启声音" : "静音";
+          soundBtn.setAttribute("aria-pressed", globalMuted ? "false" : "true");
+          soundBtn.setAttribute("aria-label", globalMuted ? "开启声音" : "关闭声音");
+        } else {
+          soundBtn.hidden = true;
+        }
+        refreshMusicLevel();
+      }
+      function applyGlobalMuted() {
+        slideVids.forEach(function (v) { if (v) { try { v.muted = globalMuted; } catch (e) {} } });
+        updateSoundBtn();
+      }
+      function pauseAllVids() {
+        slideVids.forEach(function (v) { if (v) { try { v.pause(); } catch (e) {} } });
+      }
+      function loadCurVid() {
+        var v = curVid();
+        if (v) { try { v.muted = globalMuted; } catch (e) {} }
+        if (v && v.readyState === 0) { try { v.load(); } catch (e) {} }
+      }
+
+      function buildViewerSlides() {
+        track.innerHTML = "";
+        slideImgs = [];
+        slideVids = [];
+        detailList.forEach(function (gi) {
+          var p = ITEMS[gi];
+          var slide = document.createElement("div");
+          slide.className = "viewer-slide";
+          if (p.type === "video") {
+            var vid = document.createElement("video");
+            vid.className = "video-full" + (p.ar ? " portrait" : "");
+            vid.src = p.src;
+            vid.poster = p.poster;
+            vid.setAttribute("playsinline", "");
+            vid.setAttribute("preload", "metadata");
+            vid.setAttribute("controls", "");
+            vid.setAttribute("controlslist", "nodownload");
+            vid.muted = globalMuted;
+            /* 视频带声音播放时背景音乐自动让开；暂停/播完后恢复 */
+            vid.addEventListener("play", refreshMusicLevel);
+            vid.addEventListener("pause", refreshMusicLevel);
+            vid.addEventListener("ended", refreshMusicLevel);
+            /* 原生控件里改静音也同步到全局开关 */
+            vid.addEventListener("volumechange", function () {
+              if (viewer.hidden) return;
+              if (slideVids[vIndex] !== vid) return;
+              if (vid.muted !== globalMuted) {
+                globalMuted = vid.muted;
+                slideVids.forEach(function (ov) { if (ov && ov !== vid) { try { ov.muted = globalMuted; } catch (e) {} } });
+                updateSoundBtn();
+              }
+            });
+            slide.appendChild(vid);
+            slideVids.push(vid);
+            slideImgs.push(null);
+          } else {
+            var img = document.createElement("img");
+            img.src = p.src; img.alt = p.alt; img.draggable = false;
+            slide.appendChild(img);
+            slideImgs.push(img);
+            slideVids.push(null);
+          }
+          track.appendChild(slide);
+        });
+      }
+
+      function curImg() { return slideImgs[vIndex]; }
+      function applyV() {
+        var img = curImg(); if (!img) return;
+        img.style.transform = "translate(" + vX + "px, " + vY + "px) scale(" + vScale + ")";
+      }
+      function clampPan() {
+        var maxX = stage.clientWidth * (vScale - 1) / 2;
+        var maxY = stage.clientHeight * (vScale - 1) / 2;
+        if (vX > maxX) vX = maxX; if (vX < -maxX) vX = -maxX;
+        if (vY > maxY) vY = maxY; if (vY < -maxY) vY = -maxY;
+      }
+      function setScale(s) {
+        if (curItem().type !== "photo") return;
+        vScale = Math.max(1, Math.min(4, s));
+        if (vScale === 1) { vX = 0; vY = 0; }
+        clampPan(); applyV();
+      }
+      function resetZoom() {
+        var img = curImg();
+        vScale = 1; vX = 0; vY = 0;
+        if (img) img.style.transform = "translate(0px, 0px) scale(1)";
+      }
+      function applyTrack(extra, extraY) {
+        var w = stage.clientWidth || window.innerWidth || 1;
+        var off = -vIndex * w + (extra || 0);
+        track.style.transform = "translate3d(" + off + "px, " + (extraY || 0) + "px, 0)";
+      }
+      function fillCaption() {
+        var p = ITEMS[detailList[vIndex]];
+        document.getElementById("viewerTitle").textContent = p.title;
+        document.getElementById("viewerDesc").textContent = p.desc;
+        var meta = "";
+        if (p.type === "video") {
+          meta = "视频 · " + p.durText + " · " + (p.dims || "1280 × 720");
+        } else {
+          meta = p.date || "";
+          if (p.place) meta += " · " + p.place;
+          if (p.device) meta += " · " + p.device;
+        }
+        document.getElementById("viewerMeta").textContent = meta;
+        document.getElementById("viewerCount").textContent = (vIndex + 1) + " / " + detailList.length;
+        var v = curVid();
+        if (v) { try { v.muted = globalMuted; } catch (e) {} }
+        updateSoundBtn();
+      }
+      var capTimer = null;
+      function animateCaption() {
+        if (reduceMotion) { fillCaption(); return; }
+        viewerCap.classList.add("cap-switch");
+        if (capTimer) clearTimeout(capTimer);
+        capTimer = setTimeout(function () {
+          fillCaption();
+          viewerCap.classList.remove("cap-switch");
+          capTimer = null;
+        }, 150);
+      }
+      /* 切换到指定照片：轨道平滑滑动过去，文字同步淡入淡出 */
+      function goToViewer(n, instant) {
+        if (n < 0 || n >= detailList.length || n === vIndex) {
+          track.classList.remove("dragging");
+          applyTrack(0);
+          return;
+        }
+        pauseAllVids();
+        resetZoom();
+        vIndex = n;
+        loadCurVid();
+        if (instant || reduceMotion) {
+          track.classList.add("dragging");
+          applyTrack(0);
+          void track.offsetWidth;
+          track.classList.remove("dragging");
+          fillCaption();
+        } else {
+          track.classList.remove("dragging");
+          /* 先让浏览器接上当前帧，再改位置，确保有滑动动画 */
+          void track.offsetWidth;
+          applyTrack(0);
+          animateCaption();
+          document.getElementById("viewerCount").textContent = (vIndex + 1) + " / " + detailList.length;
+          var v2 = curVid();
+          if (v2) { try { v2.muted = globalMuted; } catch (e) {} }
+          updateSoundBtn();
+        }
+      }
+      function fillViewer() { fillCaption(); }
+      /* 三级→四级：直接打开全屏查看，无放大过渡动画；关闭直接回到三级 */
+      function openViewer(i) {
+        setAppVh();
+        vIndex = i;
+        track.style.opacity = "";
+        viewerCap.style.opacity = "";
+        viewer.hidden = false;
+        pauseAllVids();
+        applyGlobalMuted();
+        loadCurVid();
+        slideImgs.forEach(function (img) { if (img) img.style.transform = "translate(0px, 0px) scale(1)"; });
+        vScale = 1; vX = 0; vY = 0;
+        fillCaption();
+        track.classList.add("dragging");
+        applyTrack(0);
+        void track.offsetWidth;
+        track.classList.remove("dragging");
+        document.getElementById("viewerCloseBtn").focus();
+      }
+      function closeViewer() {
+        pauseAllVids();
+        viewer.hidden = true;
+        refreshMusicLevel(); /* 视频关闭后，背景音乐恢复 */
+        resetZoom();
+        track.style.opacity = "";
+        viewerCap.style.opacity = "";
+        applyTrack(0, 0);
+        if (capTimer) { clearTimeout(capTimer); capTimer = null; }
+        viewerCap.classList.remove("cap-switch");
+      }
+      /* 四级下滑退出：照片继续下滑并淡出，然后回到三级 */
+      var vExiting = false;
+      function commitViewerExit() {
+        if (reduceMotion) { closeViewer(); return; }
+        vExiting = true;
+        var hh = stage.clientHeight || window.innerHeight || 1;
+        track.style.opacity = "0";
+        viewerCap.style.opacity = "0";
+        applyTrack(0, hh * 0.55);
+        setTimeout(function () {
+          vExiting = false;
+          closeViewer();
+        }, 240);
+      }
+      /* 四级右上角 × ：同样提到舞台之上，轻点与 click 都可关闭回三级，不被滑动/缩放手势遮挡 */
+      var viewerCloseBtn = document.getElementById("viewerCloseBtn");
+      viewerCloseBtn.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+      viewerCloseBtn.addEventListener("pointerup", function (e) { e.stopPropagation(); closeViewer(); });
+      viewerCloseBtn.addEventListener("click", closeViewer);
+      soundBtn.addEventListener("click", function () {
+        if (!curVid()) return;
+        globalMuted = !globalMuted;
+        applyGlobalMuted();
+      });
+
+      /* ---------- 背景音乐：Web Audio 实时合成的轻柔钢琴氛围音，单一循环 ----------
+         不用任何外链、不用下载音频文件：页面打开后用 Web Audio 实时合成一段
+         C 大调的轻柔钢琴氛围音——Cmaj7–Am7–Fmaj7–G 八小节循环，同一段旋律
+         一遍遍重复。每个音是正弦基音加一道很轻的三角泛音，用指数衰减包络
+         模拟钢琴的余响；低音垫底、和弦音错成琶音、旋律在高一个八度轻轻唱，
+         简单、轻柔、稳定。一小节 4.6 秒，调度器用前视方式不断提前排好
+         接下来的小节，循环不中断。
+         默认开启，音量轻（约 22%）；浏览器拦截自动播放时，在用户第一次点按
+         页面任意处时自动开始，开关仍显示开启；视频带声音播放时自动让开
+         （增益降到 0），视频静音/暂停/关闭后自动恢复 */
+      var MUSIC_VOL = 0.22;
+      var BAR = 4.6;                                     /* 一小节 4.6 秒 */
+      var musicOn = true;
+      var musicBtn = document.getElementById("musicBtn");
+      var musicBtnText = document.getElementById("musicBtnText");
+      var audioCtx = null, musicBus = null, musicTimer = null, nextBarTime = 0, barIdx = 0;
+      function mf(m) { return 440 * Math.pow(2, (m - 69) / 12); }   /* MIDI 号转频率 */
+      /* 八小节和弦（MIDI 号，第一个是低音，其余是和弦音）：
+         Cmaj7、Am7、Am7、Fmaj7、Fmaj7、G、Cmaj7、G */
+      var BARS = [
+        [48, 52, 55, 59],   /* C  E  G  B */
+        [45, 48, 52],       /* A  C  E */
+        [45, 48, 52],       /* A  C  E */
+        [41, 45, 48],       /* F  A  C */
+        [41, 45, 48],       /* F  A  C */
+        [43, 47, 50],       /* G  B  D */
+        [48, 52, 55, 59],   /* C  E  G  B */
+        [43, 47, 50]        /* G  B  D */
+      ];
+      /* 一个音：正弦基音 + 一道很轻的三角泛音（2 倍频），指数衰减模拟钢琴余响 */
+      function scheduleNote(freq, t, vol, dur) {
+        if (!audioCtx || !musicBus) return;
+        var o1 = audioCtx.createOscillator();
+        o1.type = "sine"; o1.frequency.value = freq;
+        var g1 = audioCtx.createGain();
+        g1.gain.setValueAtTime(vol, t);
+        g1.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+        o1.connect(g1); g1.connect(musicBus);
+        o1.start(t); o1.stop(t + dur + 0.05);
+        var o2 = audioCtx.createOscillator();
+        o2.type = "triangle"; o2.frequency.value = freq * 2;
+        var g2 = audioCtx.createGain();
+        g2.gain.setValueAtTime(vol * 0.18, t);
+        g2.gain.setTargetAtTime(0, t, dur * 0.35);
+        o2.connect(g2); g2.connect(musicBus);
+        o2.start(t); o2.stop(t + dur + 0.05);
+      }
+      /* 一小节：低音垫底，和弦音错开成琶音，旋律在高一个八度上唱 */
+      function scheduleBar(bar, t) {
+        scheduleNote(mf(bar[0]), t, 0.34, BAR * 1.05);
+        for (var k = 0; k < bar.length; k++) {
+          scheduleNote(mf(bar[k]), t + 0.55 + k * 1.15, 0.13, 2.2);
+        }
+        var mel;
+        if (bar.length === 4) mel = [bar[3], bar[2], bar[1], bar[0]];
+        else mel = [bar[2], bar[2], bar[1], bar[2]];
+        for (var j = 0; j < 4; j++) {
+          scheduleNote(mf(mel[j] + 12), t + j * 1.15, 0.26, 1.9);
+        }
+      }
+      /* 前视调度：不断提前把接下来的小节排好，八小节循环往复 */
+      function musicTick() {
+        if (!audioCtx) return;
+        while (nextBarTime < audioCtx.currentTime + 1.1) {
+          if (nextBarTime < audioCtx.currentTime - 0.2) nextBarTime = audioCtx.currentTime + 0.05;
+          scheduleBar(BARS[barIdx % BARS.length], nextBarTime);
+          nextBarTime += BAR;
+          barIdx++;
+        }
+      }
+      /* 当前是否有“带声音正在播放”的视频：有则音乐让开 */
+      function videoSoundActive() {
+        if (!viewer || viewer.hidden) return false;
+        var v = curVid();
+        return !!(v && !v.paused && !v.ended && !globalMuted);
+      }
+      function refreshMusicLevel() {
+        if (!audioCtx || !musicBus) return;
+        var target = (musicOn && !videoSoundActive()) ? MUSIC_VOL : 0;
+        try { musicBus.gain.setTargetAtTime(target, audioCtx.currentTime, 0.35); } catch (e) {}
+      }
+      function ensureCtx() {
+        if (audioCtx) return true;
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return false;
+        try {
+          audioCtx = new AC();
+          musicBus = audioCtx.createGain();
+          musicBus.gain.value = 0;
+          musicBus.connect(audioCtx.destination);
+        } catch (e) { audioCtx = null; musicBus = null; return false; }
+        return true;
+      }
+      function tryStartMusic() {
+        if (!musicOn) return;
+        if (!ensureCtx()) return;
+        var go = function () {
+          if (!musicOn || !audioCtx || audioCtx.state !== "running") return;
+          if (!musicTimer) {
+            nextBarTime = audioCtx.currentTime + 0.08;
+            barIdx = 0;
+            musicTimer = setInterval(musicTick, 240);
+            musicTick();
+          }
+          refreshMusicLevel();
+        };
+        var p = null;
+        try { p = audioCtx.resume(); } catch (e) {}
+        if (p && p.then) { p.then(go).catch(function () {}); } else { go(); }
+      }
+      function stopMusic() {
+        if (musicTimer) { clearInterval(musicTimer); musicTimer = null; }
+        if (audioCtx && musicBus) {
+          try { musicBus.gain.setTargetAtTime(0, audioCtx.currentTime, 0.15); } catch (e) {}
+        }
+      }
+      function updateMusicBtn() {
+        musicBtn.setAttribute("aria-pressed", musicOn ? "true" : "false");
+        musicBtn.setAttribute("aria-label", musicOn ? "关闭背景音乐" : "打开背景音乐");
+        musicBtnText.textContent = musicOn ? "音乐开" : "音乐关";
+        musicBtn.classList.toggle("off", !musicOn);
+      }
+      musicBtn.addEventListener("click", function () {
+        musicOn = !musicOn;
+        updateMusicBtn();
+        if (musicOn) tryStartMusic(); else stopMusic();
+      });
+      /* 打开页面先尝试自动播放；被浏览器拦截时，等第一次点按页面任意处再自动开始 */
+      updateMusicBtn();
+      tryStartMusic();
+      var musicKick = function () {
+        if (musicTimer) { document.removeEventListener("pointerdown", musicKick, true); return; }
+        tryStartMusic();
+      };
+      document.addEventListener("pointerdown", musicKick, true);
+      function goPrev() { goToViewer(vIndex - 1, false); }
+      function goNext() { goToViewer(vIndex + 1, false); }
+
+      window.addEventListener("resize", function () {
+        if (!detailView.hidden) { detailStage.classList.add("dragging"); layoutStack(); void detailStage.offsetWidth; detailStage.classList.remove("dragging"); }
+        if (!viewer.hidden) { track.classList.add("dragging"); applyTrack(0); void track.offsetWidth; track.classList.remove("dragging"); }
+      });
+
+      var pointers = {};
+      var pinchDist = 0, pinchScale = 1, dragStart = null, swipeStart = null;
+      var dragOffset = 0, trackDragging = false;
+      var vMode = null, vDragY = 0, vExitDragging = false;
+      /* 滑动后吞掉紧接着的那次 click，避免误触视频播放/暂停 */
+      stage.addEventListener("click", function (e) {
+        if (Date.now() < suppressVideoClickUntil) {
+          e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+          suppressVideoClickUntil = 0;
+        }
+      }, true);
+      stage.addEventListener("pointerdown", function (e) {
+        if (vExiting) return;
+        var isVideoTarget = curItem().type === "video" && e.target && e.target.tagName === "VIDEO";
+        if (isVideoTarget) {
+          /* 底部控件条（播放/暂停、进度、声音、全屏）区域不抢手势，点击照常给播放器 */
+          var rect = e.target.getBoundingClientRect();
+          var controlH = Math.max(48, Math.min(64, rect.height * 0.18));
+          if (e.clientY >= rect.bottom - controlH) return;
+          swipeFromVideo = true;
+        } else {
+          swipeFromVideo = false;
+        }
+        pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+        /* 视频起手时先不抢指针捕获，等确认是滑动再接管，否则会吞掉控件点击 */
+        if (!isVideoTarget) { try { stage.setPointerCapture(e.pointerId); } catch (err) {} }
+        var pts = Object.values(pointers);
+        if (pts.length === 1) {
+          swipeStart = { x: e.clientX, y: e.clientY, scale: vScale };
+          dragOffset = 0; trackDragging = false;
+          vMode = null; vDragY = 0; vExitDragging = false;
+        } else {
+          swipeStart = null;
+          if (trackDragging) { trackDragging = false; dragOffset = 0; track.classList.remove("dragging"); applyTrack(0); }
+          if (vExitDragging) {
+            vExitDragging = false; vDragY = 0; vMode = null;
+            track.classList.remove("dragging");
+            track.style.opacity = ""; viewerCap.style.opacity = "";
+            applyTrack(0, 0);
+          }
+        }
+        if (pts.length === 2) {
+          pinchDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+          pinchScale = vScale;
+        }
+        dragStart = { x: e.clientX, y: e.clientY, vx: vX, vy: vY };
+      });
+      stage.addEventListener("pointermove", function (e) {
+        if (!pointers[e.pointerId]) return;
+        pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+        var pts = Object.values(pointers);
+        if (pts.length === 2) {
+          var d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+          if (pinchDist > 0) setScale(pinchScale * d / pinchDist);
+        } else if (pts.length === 1 && dragStart && vScale > 1) {
+          vX = dragStart.vx + (e.clientX - dragStart.x);
+          vY = dragStart.vy + (e.clientY - dragStart.y);
+          clampPan(); applyV();
+        } else if (pts.length === 1 && swipeStart && vScale === 1) {
+          var dx = e.clientX - swipeStart.x;
+          var dy = e.clientY - swipeStart.y;
+          /* 主方向锁定：横向为主左右滑换图；纵向向下为主下滑退出；向上纵滑忽略 */
+          if (!vMode) {
+            if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+            if (Math.abs(dx) > Math.abs(dy) * 1.15) vMode = "h";
+            else if (Math.abs(dy) > Math.abs(dx) * 1.15) vMode = dy > 0 ? "v" : "lock";
+            else return;
+          }
+          if (vMode === "h") {
+            if (!trackDragging) {
+              trackDragging = true;
+              track.classList.add("dragging");
+              if (swipeFromVideo) {
+                suppressVideoClickUntil = Date.now() + 500;
+                try { stage.setPointerCapture(e.pointerId); } catch (err) {}
+              }
+            }
+            var eff = dx;
+            /* 第一张继续右拖、最后一张继续左拖时加阻尼 */
+            if ((vIndex === 0 && dx > 0) || (vIndex === detailList.length - 1 && dx < 0)) eff = dx * 0.35;
+            dragOffset = eff;
+            applyTrack(dragOffset);
+          } else if (vMode === "v") {
+            /* 下滑退出：照片/视频跟手下移并渐淡 */
+            if (!vExitDragging) {
+              vExitDragging = true;
+              track.classList.add("dragging");
+              if (swipeFromVideo) {
+                suppressVideoClickUntil = Date.now() + 500;
+                try { stage.setPointerCapture(e.pointerId); } catch (err) {}
+              }
+            }
+            vDragY = dy;
+            var hh = stage.clientHeight || window.innerHeight || 1;
+            track.style.opacity = Math.max(0.25, 1 - (dy / hh) * 0.9);
+            viewerCap.style.opacity = Math.max(0, 1 - dy / 120);
+            applyTrack(0, dy);
+          }
+        }
+      });
+      function endPointer(e) {
+        var wasLast = Object.keys(pointers).length === 1 && pointers[e.pointerId];
+        delete pointers[e.pointerId];
+        if (Object.keys(pointers).length < 2) pinchDist = 0;
+        if (Object.keys(pointers).length === 0) {
+          if (wasLast && swipeStart && swipeStart.scale === 1 && vScale === 1 && e.type === "pointerup") {
+            var dx = e.clientX - swipeStart.x;
+            var dy = e.clientY - swipeStart.y;
+            var w = stage.clientWidth || window.innerWidth || 1;
+            var hh = stage.clientHeight || window.innerHeight || 1;
+            var threshold = Math.max(48, Math.min(88, w * 0.18));
+            var thY = Math.max(70, Math.min(120, hh * 0.16));
+            track.classList.remove("dragging");
+            if ((trackDragging || vExitDragging) && swipeFromVideo) suppressVideoClickUntil = Date.now() + 500;
+            if (vExitDragging) {
+              if (dy >= thY && dy > Math.abs(dx) * 1.2) {
+                commitViewerExit(); /* 下滑过阈值：继续下滑淡出，退出回三级 */
+              } else {
+                /* 没滑够：照片弹回原位、恢复不透明 */
+                track.style.opacity = "";
+                viewerCap.style.opacity = "";
+                applyTrack(0, 0);
+              }
+            } else if (trackDragging && Math.abs(dx) >= threshold && Math.abs(dx) > Math.abs(dy) * 1.2) {
+              if (dx < 0 && vIndex < detailList.length - 1) goToViewer(vIndex + 1, false);
+              else if (dx > 0 && vIndex > 0) goToViewer(vIndex - 1, false);
+              else applyTrack(0);
+            } else if (trackDragging) {
+              applyTrack(0); /* 没滑够：平滑弹回原图 */
+            }
+          } else if (trackDragging || vExitDragging) {
+            track.classList.remove("dragging");
+            track.style.opacity = "";
+            viewerCap.style.opacity = "";
+            applyTrack(0, 0);
+          }
+          swipeStart = null;
+          dragStart = null;
+          dragOffset = 0; trackDragging = false;
+          vMode = null; vDragY = 0; vExitDragging = false; swipeFromVideo = false;
+        }
+      }
+      stage.addEventListener("pointerup", endPointer);
+      stage.addEventListener("pointercancel", endPointer);
+      stage.addEventListener("wheel", function (e) {
+        if (curItem().type !== "photo") return;
+        e.preventDefault();
+        setScale(vScale * (e.deltaY < 0 ? 1.12 : 0.89));
+      }, { passive: false });
+      stage.addEventListener("dblclick", function () {
+        if (curItem().type !== "photo") return;
+        setScale(vScale > 1 ? 1 : 2.5);
+      });
+
+      document.addEventListener("keydown", function (e) {
+        if (!viewer.hidden) {
+          if (e.key === "Escape") closeViewer();
+          if (e.key === "ArrowLeft") goPrev();
+          if (e.key === "ArrowRight") goNext();
+          return;
+        }
+        if (detailView.hidden) return;
+        if (e.key === "Escape") closeDetail();
+        if (e.key === "ArrowLeft") goToDetail(dIndex - 1, false);
+        if (e.key === "ArrowRight") goToDetail(dIndex + 1, false);
+      });
+    </script>
+  </body>
+</html>
