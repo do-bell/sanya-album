@@ -174,15 +174,12 @@
       }
       @media (min-width: 760px) { .home-albums { grid-template-columns: repeat(2, 1fr); } }
 
-      /* 首页分组快捷入口 + 下滑提示：第一张卡以前占满一屏、滚动条又藏着，
-         家人容易以为只有这一张。入口把 6 个分组一次摆出来，点哪个就滑到哪个；
-         提示行直说下面还有 5 个分组，滑过第一张后自动隐藏。 */
-      .home-nav { flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 0 6px 10px; }
-      .home-nav button { font: inherit; font-size: 14px; line-height: 1.4; padding: 7px 13px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; }
-      .home-nav button.active { background: var(--accent); color: #fff8ef; border-color: var(--accent); }
+      /* 首页下滑提示：第一张卡以前占满一屏、滚动条又藏着，
+         家人容易以为只有这一张。只留一行提示字，滑过第一张后自动隐藏；
+         卡片底部仍露出下一张的边，让人一眼看出下面还有。 */
       .scroll-hint { flex: 0 0 auto; text-align: center; font-size: 14px; color: var(--accent); margin: 0 0 10px; }
       .scroll-hint span { display: inline-block; animation: hint-bob 1.8s ease-in-out infinite; }
-      @keyframes hint-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
+      @keyframes hint-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
       @media (prefers-reduced-motion: reduce) { .scroll-hint span { animation: none; } }
 
       /* ---------- 照片墙 ---------- */
@@ -509,8 +506,7 @@
           <p>五天四晚，一家三口，慢慢看。</p>
         </header>
 
-        <nav class="home-nav" id="homeNav" aria-label="全部分组"></nav>
-        <p class="scroll-hint" id="scrollHint"><span aria-hidden="true">↓</span> 往下滑，还有 5 个分组</p>
+        <p class="scroll-hint" id="scrollHint"><span aria-hidden="true">↑</span> 上滑查看其他相册</p>
 
         <div class="home-albums" id="homeAlbums"></div>
       </section>
@@ -804,37 +800,13 @@
         homeAlbums.appendChild(btn);
       });
 
-      /* 首页分组快捷入口：6 个分组一次摆出来，点哪个就滑到哪个；滚动时高亮当前分组，
-         滑过第一张后下滑提示自动隐藏 */
-      (function buildHomeNav() {
-        var homeNav = document.getElementById("homeNav");
+      /* 下滑提示：滑过第一张后自动隐藏 */
+      (function () {
         var scrollHint = document.getElementById("scrollHint");
-        var homeCards = homeAlbums.children;
-        var navBtns = [];
-        ALBUMS.forEach(function (album, ai) {
-          var chip = document.createElement("button");
-          chip.type = "button";
-          chip.textContent = album.title;
-          chip.setAttribute("aria-label", "滑到分组：" + album.title);
-          chip.addEventListener("click", function () {
-            var top = homeAlbums.getBoundingClientRect().top;
-            var y = homeAlbums.scrollTop + (homeCards[ai].getBoundingClientRect().top - top);
-            homeAlbums.scrollTo({ top: y, behavior: "smooth" });
-          });
-          homeNav.appendChild(chip);
-          navBtns.push(chip);
-        });
-        function syncHomeNav() {
-          var top = homeAlbums.getBoundingClientRect().top;
-          var idx = 0;
-          for (var ci = 0; ci < homeCards.length; ci++) {
-            if (homeCards[ci].getBoundingClientRect().top - top <= 10) idx = ci;
-          }
-          navBtns.forEach(function (b, bi) { b.classList.toggle("active", bi === idx); });
-          if (scrollHint) scrollHint.style.visibility = homeAlbums.scrollTop > 40 ? "hidden" : "visible";
-        }
-        homeAlbums.addEventListener("scroll", syncHomeNav, { passive: true });
-        syncHomeNav();
+        if (!scrollHint) return;
+        homeAlbums.addEventListener("scroll", function () {
+          scrollHint.style.visibility = homeAlbums.scrollTop > 40 ? "hidden" : "visible";
+        }, { passive: true });
       })();
 
       /* 二级：当前相册的照片网格（原网格样式），点照片进三级卡片详情 */
