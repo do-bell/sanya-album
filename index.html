@@ -557,7 +557,7 @@
 
     <script>
       /* 小小杜的三亚记忆：76 条（38 张照片 + 38 段视频），2026-11-17 至 2026-11-21；
-         六段（按 Muse 版排序）：抵达 5 / 逛吃 13 / 园子里 27 / 亚特兰蒂斯 19 / 告别 7 / 花絮 5；
+         五段：抵达 6 / 逛吃 13 / 园子里 31 / 亚特兰蒂斯 20 / 告别 6；
          段内先照片后视频（玩水视频跟在玩水照片后）；照片带 EXIF 日期/地点三亚/设备 iPhone 15 / iPhone 15 Plus，视频不写日期地点 */
                   var ITEMS = [
         { type: "photo", album: "arrive", src: "assets/p1.jpg", title: "抵达三亚", short: "2026.11.17",
@@ -579,6 +579,9 @@
         { type: "video", album: "arrive", src: "assets/video-21.mp4", poster: "assets/poster-21.jpg", title: "酒店大堂听古筝",
           desc: "酒店大堂里有人在弹古筝，爸爸推着小车，小小杜戴着小白帽，听得出了神。",
           dur: "0:10", durText: "时长 10 秒", alt: "小朋友坐在小车里听大堂古筝", dims: "1280×720" },
+        { type: "video", album: "arrive", src: "assets/video-38.mp4", poster: "assets/poster-38.jpg", title: "机场候机厅",
+          desc: "候机厅里，小朋友走在前面，爸爸蹲下来给他看一只熊猫小包。",
+          dur: "1:03", durText: "时长 1 分 3 秒", alt: "爸爸在机场候机厅给小朋友看熊猫包", dims: "720×1280", ar: "9 / 16" },
         { type: "photo", album: "eat", src: "assets/p26.jpg", title: "沙滩上的小铲子", short: "2026.11.18",
           alt: "小朋友坐在沙滩上玩沙，身边放着橙色小桶和蓝色小铲子",
           desc: "坐在沙滩上，小桶小铲都摆好了，海就在眼前，先玩一会儿沙再说。",
@@ -717,6 +720,18 @@
         { type: "video", album: "garden", src: "assets/video-37.mp4", poster: "assets/poster-37.jpg", title: "草坪夜晚演出",
           desc: "夜里草坪上有人弹琴唱歌，大家坐在小椅子上听，旁边桌上还在吃晚饭。",
           dur: "0:38", durText: "时长 38 秒", alt: "夜里草坪上的演出和晚餐", dims: "1280×720" },
+        { type: "video", album: "garden", src: "assets/video-16.mp4", poster: "assets/poster-16.jpg", title: "小路上的小跑",
+          desc: "在园子的小路上咧着嘴一路小跑，背心上的小车跟着一颠一颠的，快乐藏不住。",
+          dur: "0:06", durText: "时长 6 秒", alt: "小朋友在园子的小路上笑着跑过来的视频封面", dims: "720×960", ar: "3 / 4" },
+        { type: "video", album: "garden", src: "assets/video-17.mp4", poster: "assets/poster-17.jpg", title: "看花的背影",
+          desc: "站在草坪上盯着花丛里的蒲公英灯看，小小的一个背影，看得特别专注。",
+          dur: "0:03", durText: "时长 3 秒", alt: "小朋友站在草坪上背对镜头看花丛的视频封面", dims: "720×960", ar: "3 / 4" },
+        { type: "video", album: "garden", src: "assets/video-19.mp4", poster: "assets/poster-19.jpg", title: "夜里的泳池",
+          desc: "天黑了也不肯收工，妈妈陪着在泳池边玩水枪，蓝色池水亮着光，这是属于夏夜的四十四秒。",
+          dur: "0:44", durText: "时长 44 秒", alt: "夜晚妈妈陪着小朋友在泳池边玩水枪的视频封面", dims: "720×1280", ar: "9 / 16" },
+        { type: "video", album: "garden", src: "assets/video-20.mp4", poster: "assets/poster-20.jpg", title: "水枪小喷泉",
+          desc: "水枪一压，水花喷成一把小扇子——妈妈扶着他的手，喷泉就这么开起来了。",
+          dur: "0:04", durText: "时长 4 秒", alt: "小朋友拿水枪往泳池里喷出扇形水花的视频封面", dims: "720×960", ar: "3 / 4" },
         { type: "photo", album: "atlantis", src: "assets/p16.jpg", title: "玩水时间", short: "2026.11.20",
           alt: "小朋友提着橙色小桶在浅水区边玩水",
           desc: "橙色小桶、蓝色水盆、水枪都备齐了，裤腿湿了也不在乎——玩水才是正经事。",
@@ -785,6 +800,9 @@
         { type: "video", album: "atlantis", src: "assets/video-11.mp4", poster: "assets/poster-11.jpg", title: "大鱼缸与人群",
           desc: "大鱼缸前站满了人，鱼群从头顶游过，还有一条鳐鱼从上面滑过。",
           dur: "0:21", durText: "时长 21 秒", alt: "大鱼缸前的人群和鱼群", dims: "1280×720" },
+        { type: "video", album: "atlantis", src: "assets/video-18.mp4", poster: "assets/poster-18.jpg", title: "走廊里自己走",
+          desc: "妈妈推着车跟在后面，小小杜自己在走廊里一步一步往前走，走得稳稳当当。",
+          dur: "0:07", durText: "时长 7 秒", alt: "妈妈推着婴儿车，小朋友在酒店走廊里自己走路的视频封面", dims: "720×960", ar: "3 / 4" },
         { type: "photo", album: "farewell", src: "assets/p24.jpg", title: "清晨的海", short: "2026.11.21",
           alt: "清晨从阳台望出去，椰林、泳池和远处的大海，云层镶着金边",
           desc: "最后一天的清晨，云层被朝阳镶上金边，椰林和泳池还睡着，海已经醒了。",
@@ -807,25 +825,7 @@
           date: "2026 年 11 月 21 日 19:36", place: "三亚", device: "iPhone 15 Plus" },
         { type: "video", album: "farewell", src: "assets/video-15.mp4", poster: "assets/poster-15.jpg", title: "海边草坪合影",
           desc: "海边的草坪上，一家三口自拍，妈妈还比了个耶。",
-          dur: "0:17", durText: "时长 17 秒", alt: "一家三口在海边草坪上自拍", dims: "960×720" },
-        { type: "video", album: "farewell", src: "assets/video-38.mp4", poster: "assets/poster-38.jpg", title: "机场候机厅",
-          desc: "候机厅里，小朋友走在前面，爸爸蹲下来给他看一只熊猫小包。",
-          dur: "1:03", durText: "时长 1 分 3 秒", alt: "爸爸在机场候机厅给小朋友看熊猫包", dims: "720×1280", ar: "9 / 16" },
-        { type: "video", album: "clips", src: "assets/video-16.mp4", poster: "assets/poster-16.jpg", title: "小路上的小跑",
-          desc: "在园子的小路上咧着嘴一路小跑，背心上的小车跟着一颠一颠的，快乐藏不住。",
-          dur: "0:06", durText: "时长 6 秒", alt: "小朋友在园子的小路上笑着跑过来的视频封面", dims: "720×960", ar: "3 / 4" },
-        { type: "video", album: "clips", src: "assets/video-17.mp4", poster: "assets/poster-17.jpg", title: "看花的背影",
-          desc: "站在草坪上盯着花丛里的蒲公英灯看，小小的一个背影，看得特别专注。",
-          dur: "0:03", durText: "时长 3 秒", alt: "小朋友站在草坪上背对镜头看花丛的视频封面", dims: "720×960", ar: "3 / 4" },
-        { type: "video", album: "clips", src: "assets/video-18.mp4", poster: "assets/poster-18.jpg", title: "走廊里自己走",
-          desc: "妈妈推着车跟在后面，小小杜自己在走廊里一步一步往前走，走得稳稳当当。",
-          dur: "0:07", durText: "时长 7 秒", alt: "妈妈推着婴儿车，小朋友在酒店走廊里自己走路的视频封面", dims: "720×960", ar: "3 / 4" },
-        { type: "video", album: "clips", src: "assets/video-19.mp4", poster: "assets/poster-19.jpg", title: "夜里的泳池",
-          desc: "天黑了也不肯收工，妈妈陪着在泳池边玩水枪，蓝色池水亮着光，这是属于夏夜的四十四秒。",
-          dur: "0:44", durText: "时长 44 秒", alt: "夜晚妈妈陪着小朋友在泳池边玩水枪的视频封面", dims: "720×1280", ar: "9 / 16" },
-        { type: "video", album: "clips", src: "assets/video-20.mp4", poster: "assets/poster-20.jpg", title: "水枪小喷泉",
-          desc: "水枪一压，水花喷成一把小扇子——妈妈扶着他的手，喷泉就这么开起来了。",
-          dur: "0:04", durText: "时长 4 秒", alt: "小朋友拿水枪往泳池里喷出扇形水花的视频封面", dims: "720×960", ar: "3 / 4" }
+          dur: "0:17", durText: "时长 17 秒", alt: "一家三口在海边草坪上自拍", dims: "960×720" }
       ];
 
       var PLAY_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.8v14.4c0 .9 1 1.5 1.8 1L20 13a1.2 1.2 0 0 0 0-2L8.8 3.9C8 3.4 7 4 7 4.8z"/></svg>';
@@ -841,23 +841,21 @@
       window.addEventListener("orientationchange", setAppVh);
       if (window.visualViewport) window.visualViewport.addEventListener("resize", setAppVh);
 
-      /* 分组按画面内容与发送顺序归类，共 6 个相册：云端之上（高空照片）、人间烟火（地面生活）、
+      /* 分组按画面内容与发送顺序归类，共 5 个相册：云端之上（高空照片）、人间烟火（地面生活）、
          湖畔时光（湖边照片与视频）、动物园一日（动物与园内造景）、北京印象（北京街景）、
          机坪日常（巴里坤机场）。组内保持原有/发送先后顺序，照片的文案、日期、地点、设备照计划文件，
          视频不编造日期地点。cover 为封面在 ITEMS 中的下标 */
                   var ALBUMS = [
         { id: "arrive", title: "抵达", intro: "2026 年 11 月 17 日，落地三亚——蓝天、椰子树，假期从这一刻开始。",
-          cover: 1, countText: "共 5 条 · 4 张照片 + 1 段视频", sub: "共 5 条 · 4 张照片 + 1 段视频" },
+          cover: 1, countText: "共 6 条 · 4 张照片 + 2 段视频", sub: "共 6 条 · 4 张照片 + 2 段视频" },
         { id: "eat", title: "逛吃", intro: "11 月 18 日：沙滩、海螺、花衬衫、杰瑞、海鲜，还有晚饭桌上的笑声。",
-          cover: 7, countText: "共 13 条 · 10 张照片 + 3 段视频", sub: "共 13 条 · 10 张照片 + 3 段视频" },
+          cover: 8, countText: "共 13 条 · 10 张照片 + 3 段视频", sub: "共 13 条 · 10 张照片 + 3 段视频" },
         { id: "garden", title: "园子里", intro: "11 月 19 日：泳池、海边、园子里晒太阳、看月亮灯，夜里还有一场水枪大战。",
-          cover: 18, countText: "共 27 条 · 8 张照片 + 19 段视频", sub: "共 27 条 · 8 张照片 + 19 段视频" },
+          cover: 19, countText: "共 31 条 · 8 张照片 + 23 段视频", sub: "共 31 条 · 8 张照片 + 23 段视频" },
         { id: "atlantis", title: "亚特兰蒂斯", intro: "11 月 20 日：泳池玩水、水族馆、粉色小边车、免税店的夜，和一顿笑开怀的晚餐。",
-          cover: 45, countText: "共 19 条 · 11 张照片 + 8 段视频", sub: "共 19 条 · 11 张照片 + 8 段视频" },
-        { id: "farewell", title: "告别", intro: "最后一天：阳台上的日出、草坪上的合影，还有回程路上的小插曲。",
-          cover: 64, countText: "共 7 条 · 5 张照片 + 2 段视频", sub: "共 7 条 · 5 张照片 + 2 段视频" },
-        { id: "clips", title: "花絮 · 会动的片段", intro: "会动的片段——走路、看灯、玩水，都是随手拍的小时刻。",
-          cover: 25, countText: "共 5 段视频", sub: "共 5 段视频" }
+          cover: 50, countText: "共 20 条 · 11 张照片 + 9 段视频", sub: "共 20 条 · 11 张照片 + 9 段视频" },
+        { id: "farewell", title: "告别", intro: "最后一天：阳台上的日出、草坪上的合影。",
+          cover: 70, countText: "共 6 条 · 5 张照片 + 1 段视频", sub: "共 6 条 · 5 张照片 + 1 段视频" }
       ];
       function albumItems(album) {
         var list = [];
